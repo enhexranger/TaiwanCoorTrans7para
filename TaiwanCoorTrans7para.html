@@ -1,7 +1,37 @@
-﻿<div id="map0" style="height: 420px; width: 600px;">
+﻿<style>
+.video-container {
+position: relative;
+padding-bottom: 56.25%;
+padding-top: 30px;
+height: 0;
+overflow: hidden;
+}
+
+.video-container iframe, .video-container object, .video-container embed {
+position: absolute;
+top: 0;left: 0;
+width: 100%;
+height: 100%;
+}
+
+.gm-style img {
+    max-width: none!important;
+}
+
+.addrInput .addr {
+width: 80%;
+}
+
+textarea.ta {
+width: 98%;
+}
+</style>
+<div class="video-container" id="map0" >
 </div>
-<input id="geocodeInput" size="80" value="台北縣永和市保平路" />
+<div class="addrInput">
+<input class="addr" id="geocodeInput" type="text" value="台北縣永和市保平路" />
 <input id="" onclick="geocodePOS()" type="button" value="定位" />
+</div>
 <input id="markerPOS" onkeyup="openMarkerInfoByPOS()" size="4" />
 <input id="" onclick="markersGControl('prev')" type="button" value="Prev" />
 <input id="" onclick="markersGControl('del')" type="button" value="Del" />
@@ -16,11 +46,11 @@
 <hr />
 <form name="set0">
 輸入區....主要支援 逗號(,)分隔 的資料格式，TAB(\t)會轉成逗號 <br />
-<textarea cols="60" name="inputData" rows="5"></textarea>
+<textarea class="ta" cols="60" name="inputData" rows="5"></textarea>
 
 <br />
 訊息欄....<br />
-<textarea cols="60" id="settingView" name="settingView" rows="5"></textarea>
+<textarea class="ta" cols="60" id="settingView" name="settingView" rows="5"></textarea>
 
 <input onclick="getInputDataAll()" type="button" value="取得輸入資料" />
 <input onclick="calInputDataAll()" type="button" value="BW七參數" />
@@ -69,7 +99,7 @@ xy軸顯示設定<input id="xyset" onclick="disableCngTPSet()" type="checkbox" /
 
 </option></select><br />
 <hr />
-&lt;/!input&gt;</form>
+</form>
 <form name="set1">
 Source Datum:
 <select id="DatumSet1slt" name="whatDatumSet" onchange="getSltDatumData(1)">
@@ -171,8 +201,9 @@ False Northing = <input id="FN.2" name="tmSetData" value="FN" /><br />
 <a href="http://econym.org.uk/gmap/">Mike's GMapAPIv2 Tutorial</a>
 /
 <br />
-<hr />
+
 </form>
+<hr />
 <script type="text/javascript">
 //<![CDATA[
 <!--
@@ -2607,4 +2638,4 @@ tm2sltObj.selectedIndex = gallset.tm2slt
 //]]>
 </script>
 
-<script async="async" defer="defer" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBPWqfY7rCCyz-Xda_npvhfkIdK2vRfeFM&amp;callback=startMap0" type="text/javascript"></script> 
+<script async="async" defer="defer" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBPWqfY7rCCyz-Xda_npvhfkIdK2vRfeFM&amp;callback=startMap0" type="text/javascript"></script>
