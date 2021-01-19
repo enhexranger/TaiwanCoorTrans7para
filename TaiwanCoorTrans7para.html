@@ -28,13 +28,16 @@ width: 98%;
 
 /* css-table div */
 .css-table .tr {
- display: table;
+ display: flex;
 }
 
 .css-table .td {
   display: table;
 }
 
+.css-table .hw {
+  width: 108px;
+}
 </style>
 <div class="main">
 <div class="video-container" id="map0" ></div>
@@ -196,7 +199,8 @@ DmName: <input id="DatumName.1" name="DatumSetData" value="DatumName" />
   </div>
   </div>
 </div>
-<b>Source TM setting :</b> 
+<div class="css-table">
+  <b>Source TM setting :</b> 
 <select id="TMset1slt" name="whatTMset" onchange="getSltTMdata(1)">
 <option value="TMdeg,Lng0(deg),Lat0(deg),k0,FE(m),FN(m)">---</option>
 <option id="TM2.1" selected="" value="TM2-121,121,0,0.9999,250000,0">TM2-121</option>
@@ -209,24 +213,25 @@ DmName: <input id="DatumName.1" name="DatumSetData" value="DatumName" />
 TMset: <input id="TMdeg.1" name="tmSetData" value="TMdeg" />
 <input onclick="addTMOption(1)" type="button" value="add TM" /><br />
 <div class="tr">
-  <div>Central meridian</div>
-  <div><input id="Lng0.1" name="tmSetData" value="Lng0" /></div>  
+  <div class="hw">Central meridian</div>
+    <div><input id="Lng0.1" name="tmSetData" value="Lng0" /></div>  
 </div>
 <div class="tr">
-  <div>Central parallel</div>
+  <div class="hw">Central parallel</div>
   <div><input id="Lat0.1" name="tmSetData" value="Lat0" /></div>  
 </div>
 <div class="tr">
-  <div>scale factor</div>
-  <div><input id="k0.1" name="tmSetData" value="k0" /></div>
+  <div class="hw">scale factor</div>
+  <div><input id="k0.1" name="tmSetData" value="k0" /></div>  
 </div>
 <div class="tr">
-  <div>False Easting</div>
+  <div class="hw">False Easting</div>
   <div><input id="FE.1" name="tmSetData" value="FE" /></div>
 </div>
 <div class="tr">
-  <div>False Northing</div>
-  <div><input id="FN.1" name="tmSetData" value="FN" /></div>
+    <div class="hw">False Northing</div>
+    <div><input id="FN.1" name="tmSetData" value="FN" /></div>
+</div>
 </div>
 <hr />
 </form>
@@ -242,77 +247,91 @@ DmName: <input id="DatumName.2" name="DatumSetData" value="DatumName" />
 <input onclick="addDatumOption(2)" type="button" value="add Datum" />
 <input onclick="chkInputDatumData(2)" type="button" value="chkDtm2" />
 <br />
-<div>
-  <div>a</div> <div><input id="sma.2" name="DatumSetData" value="a" /></div>
+<div class="css-table">
+  <div class="tr">
+    <div class="td">
+      <div>a</div>
+       <div><input id="sma.2" name="DatumSetData" value="a" /></div>
+    </div>
+    <div class="td">
+      <div>1/f</div> 
+      <div><input id="divf.2" name="DatumSetData" value="1/f" /></div>
+    </div>
+    <div class="td">
+      <div>b </div>
+      <div><input id="smb.2" name="DatumSetData" value="b" /></div>
+    </div>
+  </div>
+  <div class="tr">
+    <div class="td">
+      <div>dX </div>
+      <div><input id="dX.2" name="DatumSetData" value="dX" /></div>
+    </div>
+    <div class="td">
+      <div>dY </div>
+      <div><input id="dY.2" name="DatumSetData" value="dY" /></div>
+    </div>
+    <div class="td">
+      <div>dZ </div>
+      <div><input id="dZ.2" name="DatumSetData" value="dZ" /></div>
+    </div>
+  </div>
+  <div class="tr">
+    <div class="td">
+      <div>Rx </div>
+      <div><input id="Rx.2" name="DatumSetData" value="Rx" /></div>
+    </div>
+    <div class="td">
+      <div>Ry </div>
+      <div><input id="Ry.2" name="DatumSetData" value="Ry" /></div>
+    </div>
+    <div class="td">
+      <div>Rz </div>
+      <div><input id="Rz.2" name="DatumSetData" value="Rz" /></div>
+    </div>  
+  </div>
+  <div class="tr">
+    <div class="td">
+      <div>sf</div>
+      <div><input id="sfppm.2" name="DatumSetData" value="sf" /></div>
+    </div>  
+  </div>
 </div>
-<div class="tr">
-  1/f <input id="divf.2" name="DatumSetData" value="1/f" />
-</div>
-<div class="tr">
-  <div>b </div>
-  <div><input id="smb.2" name="DatumSetData" value="b" /></div>
-</div>
-<div class="tr">
-  <div>dX </div>
-  <div><input id="dX.2" name="DatumSetData" value="dX" /></div>
-</div>
-<div class="tr">
-  <div>dY </div>
-  <div><input id="dY.2" name="DatumSetData" value="dY" /></div>
-</div>
-<div class="tr">
-  <div>dZ </div>
-  <div><input id="dZ.2" name="DatumSetData" value="dZ" /></div>
-</div>
-<div class="tr">
-  <div>Rx </div>
-  <div><input id="Rx.2" name="DatumSetData" value="Rx" /></div>
-</div>
-<div class="tr">
-  <div>Ry </div>
-  <div><input id="Ry.2" name="DatumSetData" value="Ry" /></div>
-</div>
-<div class="tr">
-  <div>Rz </div>
-  <div><input id="Rz.2" name="DatumSetData" value="Rz" /></div>
-</div>
-<div class="tr">
-  <div>sf</div>
-  <div><input id="sfppm.2" name="DatumSetData" value="sf" /></div>
-</div>
-<b>Target TM setting :   </b>
+<div class="css-table">
+  <b>Target TM setting :   </b>
 <select id="TMset2slt" name="whatTMset" onchange="getSltTMdata(2)">
-<option value="TMdeg,Lng0(deg),Lat0(deg),k0,FE(m),FN(m)">---
-</option><option id="TM2.2" selected="" value="TM2-121,121,0,0.9999,250000,0">TM2-121
-</option><option id="TM3.2" value="TM3-121,121,0,1,350000,0">TM3-121
-</option><option id="TM6.2" value="TM6-123,123,0,0.9996,500000,0">TM6-123
-</option><option id="TM2.2.119" value="TM2-119,119,0,0.9999,250000,0">澎湖TM2-119
-</option><option id="TM6.2.117" value="TM6-117,117,0,0.9996,500000,0">澎湖TM6-117
-</option></select><br />
+<option value="TMdeg,Lng0(deg),Lat0(deg),k0,FE(m),FN(m)">---</option>
+<option id="TM2.2" selected="" value="TM2-121,121,0,0.9999,250000,0">TM2-121</option>
+<option id="TM3.2" value="TM3-121,121,0,1,350000,0">TM3-121</option>
+<option id="TM6.2" value="TM6-123,123,0,0.9996,500000,0">TM6-123</option>
+<option id="TM2.2.119" value="TM2-119,119,0,0.9999,250000,0">澎湖TM2-119</option>
+<option id="TM6.2.117" value="TM6-117,117,0,0.9996,500000,0">澎湖TM6-117</option>
+</select>
+<br />
 TMset: <input id="TMdeg.2" name="tmSetData" value="TMdeg" />
-<div>
-  <input onclick="addTMOption(2)" type="button" value="add TM" />
-</div>
+  <input onclick="addTMOption(2)" type="button" value="add TM" /><br/>
 <div class="tr">
-    <div>Central meridian </div>
+    <div class="hw">Central meridian </div>
     <div><input id="Lng0.2" name="tmSetData" value="Lng0" /></div>
 </div>
 <div class="tr">
-  <div>Central parallel </div>
+  <div class="hw">Central parallel </div>
   <div><input id="Lat0.2" name="tmSetData" value="Lat0" /></div>
 </div>
 <div class="tr">
-  <div>scale factor </div>
+  <div class="hw">scale factor </div>
   <div><input id="k0.2" name="tmSetData" value="k0" /></div>
 </div>
 <div class="tr">
-  <div>False Easting </div>
+  <div class="hw">False Easting </div>
   <div><input id="FE.2" name="tmSetData" value="FE" /></div>
 </div>
 <div class="tr">
-    <div>False Northing </div>
+    <div class="hw">False Northing </div>
     <div><input id="FN.2" name="tmSetData" value="FN" /></div>
 </div>
+</div>
+
 </form>
 <hr />
 <div>任意門:(2021.01.19 已檢查)</div>
