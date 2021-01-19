@@ -48,8 +48,8 @@ width: 98%;
   <input id="markerNum" size="4" />
   <input id="" onclick="markersGControl('prev')" type="button" value="前" />
   <input id="" onclick="markersGControl('next')" type="button" value="後" />
-  <input id="" onclick="markersGControl('del')" type="button" value="刪" />
-  <input onclick="clearAlloverlays()" type="button" value="全刪" />
+  <input id="" onclick="markersGControl('del')" type="button" value="消" />
+  <input onclick="clearAlloverlays()" type="button" value="全消" />
 </div>
 <div class="clickOption">
   <label>點擊功能</label> 
@@ -315,33 +315,20 @@ TMset: <input id="TMdeg.2" name="tmSetData" value="TMdeg" />
 </div>
 </form>
 <hr />
+<div>任意門:(2021.01.19 已檢查)</div>
 <a href="https://wiki.osgeo.org/wiki/Taiwan_Power_Company_grid">電力座標wiki</a>
-/
 <a href="http://gis.thl.ncku.edu.tw/coordtrans/coordtrans.aspx">成大Web</a>
-/
-<a href="https://wsserver.epa.gov.tw/gis/coordtrans.aspx">MTWDCON epa web</a>
-/
-<a href="http://webgis.sinica.edu.tw/cgi-tran/webtrans.htm">中研院web</a>
-/
-<a href="http://61.216.174.87/tpcGoogleMap">台電web</a>
-/
+<a href="https://wsserver.epa.gov.tw/gis/coordtrans.aspx">環保署地理資訊MTWDCON</a>
+<a href="http://webgis.sinica.edu.tw/cgi-tran/webtrans.htm">中研院(服務暫停)</a>
+<a href="http://61.216.174.87/tpcGoogleMap">台電圖號座標定位系統</a>
 <a href="http://www.sunriver.com.tw/taiwanmap/grid_tm2_convert.php">上河文化</a>
-/
 <a href="http://jidanni.org/geo/taipower">Jidanni</a>
-/
-<a href="https://www.defensie.nl/downloads/applicaties/2018/06/06/pctrans5_20180601">PCTrans</a>
-/
-<br />
+<a href="https://www.defensie.nl/downloads/applicaties/2020/06/15/pctrans5_20200615">荷蘭PCTrans</a>
 <a href="http://code.google.com/apis/maps/documentation/javascript/reference.html">GoogleMapAPI-js V3 Reference</a>
-/
 <a href="http://econym.org.uk/gmap/">Mike's GMapAPIv2 Tutorial</a>
-/
-<br />
 </div>
-<hr />
 <script type="text/javascript">
 //<![CDATA[
-<!--
 // Gobal var. overlayObj: map , marker , markerInfo, polyline , polygon
 
     var mapG;
