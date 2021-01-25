@@ -25,6 +25,7 @@
   textarea.ta {
   width: 98%;
   }
+
   </style>
   <div class="video-container" id="map0">
   </div>
@@ -32,6 +33,7 @@
   <input class="addr" id="geocodeInput" type="text" value="台北縣永和市保平路" />
   <input id="" onclick="geocodePOS()" type="button" value="定位" />
   </div>
+
   <input id="markerPOS" onkeyup="openMarkerInfoByPOS()" size="4" />
   <input id="" onclick="markersGControl('prev')" type="button" value="Prev" />
   <input id="" onclick="markersGControl('del')" type="button" value="Del" />
@@ -47,11 +49,10 @@
   <form name="set0">
   輸入區....主要支援 逗號(,)分隔 的資料格式，TAB(\t)會轉成逗號 <br />
   <textarea class="ta" cols="60" name="inputData" rows="5"></textarea>
-  
+
   <br />
   訊息欄....<br />
   <textarea class="ta" cols="60" id="settingView" name="settingView" rows="5"></textarea>
-  
   <input onclick="getInputDataAll()" type="button" value="取得輸入資料" />
   <input onclick="calInputDataAll()" type="button" value="BW七參數" />
   <input onclick="calDataByNCKU67_97All()" type="button" value="成大67轉97" />
@@ -61,9 +62,11 @@
   輸出項目....
   <input id="LLh1" name="outSet" type="checkbox" />LLh1
   <input id="tmXY1" name="outSet" type="checkbox" />tmXY1
+
   <input id="XYZ1" name="outSet" type="checkbox" />XYZ1
   <input id="XYZ0" name="outSet" type="checkbox" />XYZ0
   <input id="XYZ2" name="outSet" type="checkbox" />XYZ2
+
   <input checked="" id="LLh2" name="outSet" type="checkbox" />LLh2
   <input checked="" id="tmXY2" name="outSet" type="checkbox" />tmXY2
   <br />
@@ -181,7 +184,6 @@
   <hr />
   <div>任意門:(2021.01.19 已檢查)</div>
   <a href="https://wiki.osgeo.org/wiki/Taiwan_Power_Company_grid">電力座標wiki</a>
-  /
   <a href="http://gis.thl.ncku.edu.tw/coordtrans/coordtrans.aspx">成大Web</a>
   /
   <a href="https://wsserver.epa.gov.tw/gis/coordtrans.aspx">環保署地理資訊MTWDCON</a>
@@ -191,14 +193,12 @@
   <a href="http://61.216.174.87/tpcGoogleMap">台電圖號座標定位系統</a>
   /
   <a href="http://www.sunriver.com.tw/taiwanmap/grid_tm2_convert.php">上河文化</a>
-  /
   <a href="http://jidanni.org/geo/taipower">Jidanni</a>
   /
   <a href="https://www.defensie.nl/downloads/applicaties/2020/06/15/pctrans5_20200615">荷蘭PCTrans</a>
   /
   <br />
   <a href="http://code.google.com/apis/maps/documentation/javascript/reference.html">GoogleMapAPI-js V3 Reference</a>
-  /
   <a href="http://econym.org.uk/gmap/">Mike's GMapAPIv2 Tutorial</a>
   /
   <br />
@@ -216,6 +216,82 @@
       var polylinesG = [];    
       var polygonsG = [];
   
+    var GoutputData = [];  // 輸出資料物件再存成全域型態
+  //var GoutputDataPRN = [];
+
+var PI = Math.PI
+
+function POW(input,lvl){var output = Math.pow(input,lvl) ; return output;}
+function SIN(input){var output = Math.sin(input) ; return output;}
+function COS(input){var output = Math.cos(input) ; return output;}
+function TAN(input){var output = Math.tan(input) ; return output;}
+function SQRT(input){var output = Math.sqrt(input) ; return output;}
+function ATAN(input){var output = Math.atan(input) ; return output;}
+
+function ATAN2(y,x){var output = Math.atan2(y,x) ; return output;}
+
+function deg2rad(deg){var rad = deg*PI/180 ; return rad;} // 度轉徑 func. d2r
+
+function rad2deg(rad){var deg = rad*180/PI ; return deg;} // 徑轉度 func. r2d
+
+// 2021.01.25 javascript round solution
+// http://www.jacklmoore.com/notes/rounding-in-javascript/
+function round(value, decimals) { return Number(Math.round(value+'e'+decimals)+'e-'+decimals);}
+
+//---TaipowerGobal var.---
+
+var GTPset1 = []
+GTPset1.push("Area,BottomX,BottomY,附註")
+GTPset1.push("A,170000,2750000,新竹/竹北市/桃園新豐鄉")
+GTPset1.push("B,250000,2750000,台北/桃園/宜蘭北宜")
+GTPset1.push("C,330000,2750000,台北貢寮/宜蘭頭城")
+GTPset1.push("D,170000,2700000,苗栗/新竹")
+GTPset1.push("E,250000,2700000,桃園/新竹/苗栗/宜蘭")
+GTPset1.push("F,330000,2700000,宜蘭")
+GTPset1.push("G,170000,2650000,北彰化/台中縣市/南苗栗/南投")
+GTPset1.push("H,250000,2650000,南投/花蓮秀林/台中和平")
+GTPset1.push("J,90000,2600000,雲林沿海")
+GTPset1.push("K,170000,2600000,雲林/嘉義/南投")
+GTPset1.push("L,250000,2600000,南投/花蓮")
+GTPset1.push("M,90000,2550000,嘉義台南縣市沿海")
+GTPset1.push("N,170000,2550000,南嘉義/北台南/北高雄/台東")
+GTPset1.push("O,250000,2550000,台東花蓮交界")
+GTPset1.push("P,90000,2500000,台南市高雄沿海")
+GTPset1.push("Q,170000,2500000,北屏東/高雄/台東/南台南")
+GTPset1.push("R,250000,2500000,台東/綠島?")
+GTPset1.push("T,170000,2450000,屏東/台東/南高雄")
+GTPset1.push("U,250000,2450000,台東太麻里/3.5公頃")
+GTPset1.push("V,170000,2400000,屏東墾丁")
+GTPset1.push("W,250000,2400000,(蘭嶼?)")
+GTPset1 = GTPset1.join("\r\n")
+
+var GTPset2 = []
+GTPset2.push("Area,BottomX,BottomY,附註")
+GTPset2.push("Y,275000,2564000,澎湖南")
+GTPset2.push("X,275000,2614000,澎湖北")
+GTPset2 = GTPset2.join("\r\n")
+
+var GtaipowerSet = new String()
+GtaipowerSet = GTPset1
+
+var GAreaNames = getTPsetArea(); // 從 GtaipowerSet 中取出 area 的部份到 GArea
+
+var Gallset = new Object();
+Gallset.d1 = []
+Gallset.d2 = []
+Gallset.d1slt = 0
+Gallset.d2slt = 0
+Gallset.tm1 = []
+Gallset.tm2 = []
+Gallset.tm1slt = 0
+Gallset.tm2slt = 0
+
+//var GchkXY = ["0","1","2","3","4","5","6","7","8","9"]
+var GchkArea100X = ["A","B","C","D","E","F","G","H"]
+var GchkArea100Y = ["A","B","C","D","E"]
+
+var GTPsetStatus ="none"
+
   //-------------------------------------------------------------------------
       
         function startMap0(){
@@ -367,16 +443,15 @@
       var lat1 = latlng.lat() ; 
       var lng1 = latlng.lng() ;
        
-          p84 = calWGS84_67_97Sub(lat1,lng1);
+    var p84 = calWGS84_67_97Sub(lat1,lng1);
       
-      var LL1 = lat1.toFixed(6)+","+lng1.toFixed(6)
-      var LL1utm = p84.utm.X.toFixed(2)+","+p84.utm.Y.toFixed(2)
-      var LL2 = p84.LLh2.LatY.toFixed(6)+","+p84.LLh2.LngX.toFixed(6)
-      var xy2 = p84.tmXY2.X.toFixed(2)+","+p84.tmXY2.Y.toFixed(2)
-  
-      var LLh97 = p84.LLh97.LatY.toFixed(6)+","+p84.LLh97.LngX.toFixed(6)
-      var xy97 = p84.tmXY97.X.toFixed(2)+","+p84.tmXY97.Y.toFixed(2)
-      
+    var LL1 = round(lat1,6)+","+round(lng1,6);
+    var LL1utm = round(p84.utm.X,2)+","+round(p84.utm.Y,2);
+    var LL2 = round(p84.LLh2.LatY,6)+","+round(p84.LLh2.LngX,6);
+    var xy2 = round(p84.tmXY2.X,2)+","+round(p84.tmXY2.Y,2);
+    var LLh97 = round(p84.LLh97.LatY,6)+","+round(p84.LLh97.LngX,6);
+    var xy97 = round(p84.tmXY97.X,2)+","+round(p84.tmXY97.Y,2);
+    
       TPname = cal67getTPowerSub(p84.tmXY2.X,p84.tmXY2.Y)
          
       var mk1info = [] ;
@@ -669,34 +744,6 @@
   
   }
   
-  //-------------------------------------------------------------------------
-  
-  testData0();
-  getSltDatumData(1);  
-  getSltTMdata(1);
-  getSltDatumData(2);
-  getSltTMdata(2);
-  
-  //Gobal var.------------------------------------------------------------
-  
-  var GoutputData = [];  // 輸出資料物件再存成全域型態
-  //var GoutputDataPRN = [];
-  
-  var PI = Math.PI
-  
-  function POW(input,lvl){var output = Math.pow(input,lvl) ; return output;}
-  function SIN(input){var output = Math.sin(input) ; return output;}
-  function COS(input){var output = Math.cos(input) ; return output;}
-  function TAN(input){var output = Math.tan(input) ; return output;}
-  function SQRT(input){var output = Math.sqrt(input) ; return output;}
-  function ATAN(input){var output = Math.atan(input) ; return output;}
-  
-  function ATAN2(y,x){var output = Math.atan2(y,x) ; return output;}
-  
-  function deg2rad(deg){var rad = deg*PI/180 ; return rad;} // 度轉徑 func. d2r
-  
-  function rad2deg(rad){var deg = rad*180/PI ; return deg;} // 徑轉度 func. r2d
-  
   function addSettingView(msg){
   var obj_settingView = document.set0.settingView ;
   //obj_settingView.innerText += "\r\n" + msg ;
@@ -704,62 +751,6 @@
   
   obj_settingView.scrollTop = obj_settingView.scrollHeight
   }// func. addSettingView
-  
-  //end Gobal----------------------------------------------------------------
-  
-  //---TaipowerGobal var.---
-  
-  var GTPset1 = []
-  GTPset1.push("Area,BottomX,BottomY,附註")
-  GTPset1.push("A,170000,2750000,新竹/竹北市/桃園新豐鄉")
-  GTPset1.push("B,250000,2750000,台北/桃園/宜蘭北宜")
-  GTPset1.push("C,330000,2750000,台北貢寮/宜蘭頭城")
-  GTPset1.push("D,170000,2700000,苗栗/新竹")
-  GTPset1.push("E,250000,2700000,桃園/新竹/苗栗/宜蘭")
-  GTPset1.push("F,330000,2700000,宜蘭")
-  GTPset1.push("G,170000,2650000,北彰化/台中縣市/南苗栗/南投")
-  GTPset1.push("H,250000,2650000,南投/花蓮秀林/台中和平")
-  GTPset1.push("J,90000,2600000,雲林沿海")
-  GTPset1.push("K,170000,2600000,雲林/嘉義/南投")
-  GTPset1.push("L,250000,2600000,南投/花蓮")
-  GTPset1.push("M,90000,2550000,嘉義台南縣市沿海")
-  GTPset1.push("N,170000,2550000,南嘉義/北台南/北高雄/台東")
-  GTPset1.push("O,250000,2550000,台東花蓮交界")
-  GTPset1.push("P,90000,2500000,台南市高雄沿海")
-  GTPset1.push("Q,170000,2500000,北屏東/高雄/台東/南台南")
-  GTPset1.push("R,250000,2500000,台東/綠島?")
-  GTPset1.push("T,170000,2450000,屏東/台東/南高雄")
-  GTPset1.push("U,250000,2450000,台東太麻里/3.5公頃")
-  GTPset1.push("V,170000,2400000,屏東墾丁")
-  GTPset1.push("W,250000,2400000,(蘭嶼?)")
-  GTPset1 = GTPset1.join("\r\n")
-  
-  var GTPset2 = []
-  GTPset2.push("Area,BottomX,BottomY,附註")
-  GTPset2.push("Y,275000,2564000,澎湖南")
-  GTPset2.push("X,275000,2614000,澎湖北")
-  GTPset2 = GTPset2.join("\r\n")
-  
-  var GtaipowerSet = new String()
-  GtaipowerSet = GTPset1
-  
-  var GAreaNames = getTPsetArea(); // 從 GtaipowerSet 中取出 area 的部份到 GArea
-  
-  var Gallset = new Object();
-  Gallset.d1 = []
-  Gallset.d2 = []
-  Gallset.d1slt = 0
-  Gallset.d2slt = 0
-  Gallset.tm1 = []
-  Gallset.tm2 = []
-  Gallset.tm1slt = 0
-  Gallset.tm2slt = 0
-  
-  //var GchkXY = ["0","1","2","3","4","5","6","7","8","9"]
-  var GchkArea100X = ["A","B","C","D","E","F","G","H"]
-  var GchkArea100Y = ["A","B","C","D","E"]
-  
-  var GTPsetStatus ="none"
   
   function ascendNum(a,b){return a-b} // 小到大
   function descendNum(a,b){return b-a} // 大到小 供 array.sort(sortFunc.) 用
@@ -1502,10 +1493,10 @@
   
   var LatY = goutputData[i].LLh2.LatY
   var LngX = goutputData[i].LLh2.LngX
-  var LLh2 = LatY.toFixed(8) +","+ LngX.toFixed(8)
+var LLh2 = round(LatY,8) +","+ round(LngX,8)
   var comment = LLh2 + "<br/>" + goutputData[i].cmt
   
-   var point = new google.maps.LatLng(LatY,LngX);
+var point = new google.maps.LatLng(LatY,LngX);
   bounds.extend(point)
   
    createMarker(MapG,point,comment,LLh2,"")
@@ -1957,24 +1948,24 @@
   tmp[i].push(i+1) ; // 第一個加入的是"資料編號"
   
   if(chkLLh1.checked )
-  {tmp[i].push(outputData[i].LLh1.LatY.toFixed(8),
-               outputData[i].LLh1.LngX.toFixed(8),
-               outputData[i].LLh1.h.toFixed(2) ); } // LLh1
+{tmp[i].push(round(outputData[i].LLh1.LatY,8),
+             round(outputData[i].LLh1.LngX,8),
+             round(outputData[i].LLh1.h,2) ); } // LLh1
   
   if(chktmXY1.checked )
-  {tmp[i].push(outputData[i].tmXY1.X.toFixed(2),
-               outputData[i].tmXY1.Y.toFixed(2),
-              outputData[i].tmXY1.h.toFixed(2) ); } // TMxy1
+{tmp[i].push(round(outputData[i].tmXY1.X,2),
+             round(outputData[i].tmXY1.Y,2),
+             round(outputData[i].tmXY1.h,2) ); } // TMxy1
   
   if(chkLLh2.checked )
-  {tmp[i].push(outputData[i].LLh2.LatY.toFixed(8),
-               outputData[i].LLh2.LngX.toFixed(8),
-               outputData[i].LLh2.h.toFixed(2)); } // LLh2
+{tmp[i].push(round(outputData[i].LLh2.LatY,8),
+             round(outputData[i].LLh2.LngX,8),
+             round(outputData[i].LLh2.h,2) ); } // LLh2
   
   if(chktmXY2.checked )
-  {tmp[i].push(outputData[i].tmXY2.X.toFixed(2),
-               outputData[i].tmXY2.Y.toFixed(2),
-              outputData[i].tmXY2.h.toFixed(2)); } // TMxy2
+{tmp[i].push(round(outputData[i].tmXY2.X,2),
+             round(outputData[i].tmXY2.Y,2),
+             round(outputData[i].tmXY2.h,2) ); } // TMxy2
   
   if(chkXYZ1.checked ) 
   {tmp[i].push(outputData[i].XYZ1.X.toFixed(2),
@@ -2631,8 +2622,17 @@
   tm2sltObj.selectedIndex = gallset.tm2slt
   
   } // func. restoreDatumTMsetG
+
   //------------------------------------------------------------------------- 
   
+testData0();
+getSltDatumData(1);  
+getSltTMdata(1);
+getSltDatumData(2);
+getSltTMdata(2);
+
+//-------------------------------------------------------------------------
+
   //-->
   
   //]]>
