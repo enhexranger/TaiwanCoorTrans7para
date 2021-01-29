@@ -348,7 +348,7 @@ TMset: <input id="TMdeg.2" name="tmSetData" value="TMdeg" />
 </div>
 <script type="text/javascript">
 //<![CDATA[
-// Gobal var. overlayObj: map , marker , markerInfo, polyline , polygon
+// Global var. overlayObj: map , marker , markerInfo, polyline , polygon
 
     var mapG;
     
@@ -379,7 +379,7 @@ function rad2deg(rad){var deg = rad*180/PI ; return deg;} // 徑轉度 func. r2d
 // http://www.jacklmoore.com/notes/rounding-in-javascript/
 function round(value, decimals) { return Number(Math.round(value+'e'+decimals)+'e-'+decimals);}
 
-//---TaipowerGobal var.---
+//---TaipowerGlobal var.---
 
 var GTPset1 = []
 GTPset1.push("Area,BottomX,BottomY,附註")
@@ -631,7 +631,7 @@ if(polylineCHK(latlngObj) == true){
      //alert(latlngObj[0] == cline.getPath().getAt(0))
      
      var PolylinesG = polylinesG
-     PolylinesG.push(cline) ; // gobal 管理
+     PolylinesG.push(cline) ; // Global 管理
 
  } // if
 } // func. createPolyline
@@ -665,7 +665,7 @@ return result
 //map , 座標, info內容, title顯示, 檢查項 open = 產生點就開啟 info窗
 function createMarker(map,latlng,html,cmt,chk){
 
-var MarkersG = markersG ; var MarkersInfoG = markersInfoG ; // 取用 gobal var.
+var MarkersG = markersG ; var MarkersInfoG = markersInfoG ; // 取用 Global var.
 var MarkerNumObj = document.getElementById("markerNum")
 var MapG = mapG ;
 
@@ -693,7 +693,7 @@ MarkersG.push(marker); //送至全域 做管理
     marker_info.open(MapG,marker); // 剛產生的 marker開info窗
     } // if chk  
 
-MarkersInfoG.push(marker_info); // gobal markersInfo
+MarkersInfoG.push(marker_info); // Global markersInfo
 
 MarkerNumObj.value = MarkersG.length // marker總數顯示更新
 getMarkerPOShtml(marker) // 查詢此 marker 是第幾個，並更新 html
@@ -1075,7 +1075,7 @@ function(event){getEventMarkerInfo(event); }
       ) ; // polygon 在 overlay 上被點到也需要事件處理
 
 var PolygonsG = polygonsG
-PolygonsG.push(polygon); // gobal polygons 管理
+PolygonsG.push(polygon); // Global polygons 管理
 
     } // if
     
@@ -1416,7 +1416,7 @@ for(var i = 0 ; i < input.length ; i++)
 {
 input[i] = input[i].replace('\t',','); 
 input[i] = input[i].replace(/ /g,',');
-// 先將 tab、空白 取代為 , // 單一空白則另需 gobal search
+// 先將 tab、空白 取代為 , // 單一空白則另需 Global search
 
 input[i] = input[i].split(",")} 
 // 分割得 二維矩陣
@@ -1813,7 +1813,7 @@ var objData = obj_inputDataString.split("\n")
 for(var i=0,num=objData.length ; i < num ; i++)
 {objData[i] = objData[i].replace('\t',','); 
 //objData[i] = objData[i].replace(/ /g,',');
-// 先將 tab、空白 取代為 , ; 單一空白則另需 gobal search
+// 先將 tab、空白 取代為 , ; 單一空白則另需 Global search
 objData[i] = objData[i].split(","); }
 // 每筆資料再逗號分隔為陣列，成為二維矩陣
 
@@ -2017,7 +2017,7 @@ inputData = getInputDataSub(inputDataStr)
 outputData = calInputData7paraSub(inputData)
 outputDataPRN(outputData)
 
-GoutputData = outputData; // 輸出資料丟一份到 gobal var. 
+GoutputData = outputData; // 輸出資料丟一份到 Global var. 
 // OK 的. 不需取了再用. 效能幾乎無差
 
 } // func. calInputDataAll
@@ -2548,7 +2548,7 @@ inputData = getInputDataSub(inputDataStr) // 識別並形成矩陣物件
 outputData = calDataByNCKU_Sub(inputData,1) // 1 = 67->97
 outputDataPRN(outputData)
 
-GoutputData = outputData // 輸出資料丟一份到 gobal var. 
+GoutputData = outputData // 輸出資料丟一份到 Global var. 
 } // func. NCKU 67->97
 
 //-------------------------------------------------------------------------
@@ -2778,5 +2778,17 @@ getSltTMdata(2);
 
 //]]>
 </script>
-
-<script async="async" defer="defer" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBPWqfY7rCCyz-Xda_npvhfkIdK2vRfeFM&amp;callback=startMap0" type="text/javascript"></script>
+<script>
+  if(window.google && window.google.maps){
+      // the map API is already be loaded (from a previous button click, maybe)
+      startMap0();
+  
+  } else if(!document.getElementById('google-map-script')) {
+      // the script tag is not present so add it to the DOM
+      var scriptTag = document.createElement('script');
+      scriptTag .id = 'google-map-script';
+      scriptTag .src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyBPWqfY7rCCyz-Xda_npvhfkIdK2vRfeFM&callback=startMap0';
+      var head = document.getElementsByTagName('head')[0];
+      head.appendChild(scriptTag);
+  }
+  </script>
