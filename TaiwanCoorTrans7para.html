@@ -377,7 +377,16 @@ function rad2deg(rad){var deg = rad*180/PI ; return deg;} // 徑轉度 func. r2d
 
 // 2021.01.25 javascript round solution
 // http://www.jacklmoore.com/notes/rounding-in-javascript/
-function round(value, decimals) { return Number(Math.round(value+'e'+decimals)+'e-'+decimals);}
+// 2021.01.30 小數位預設值與標籤識別 
+function round(value, decimals) { 
+  switch(decimals){
+    case 'xy': decimals = 2; break;
+    case 'll': decimals = 6; break;
+    case undefined : decimals = 0; break;
+    default: decimals = 8;
+  }
+  return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+}
 
 //---TaipowerGobal var.---
 
@@ -586,12 +595,12 @@ function get_84_97_67_TPName_info(latlng){
      
     var p84 = calWGS84_67_97Sub(lat1,lng1);
     
-    var LL1 = round(lat1,6)+","+round(lng1,6);
-    var LL1utm = round(p84.utm.X,2)+","+round(p84.utm.Y,2);
-    var LL2 = round(p84.LLh2.LatY,6)+","+round(p84.LLh2.LngX,6);
-    var xy2 = round(p84.tmXY2.X,2)+","+round(p84.tmXY2.Y,2);
-    var LLh97 = round(p84.LLh97.LatY,6)+","+round(p84.LLh97.LngX,6);
-    var xy97 = round(p84.tmXY97.X,2)+","+round(p84.tmXY97.Y,2);
+    var LL1 = round(lat1,'ll')+","+round(lng1,'ll');
+    var LL1utm = round(p84.utm.X,'xy')+","+round(p84.utm.Y,'xy');
+    var LL2 = round(p84.LLh2.LatY,'ll')+","+round(p84.LLh2.LngX,'ll');
+    var xy2 = round(p84.tmXY2.X,'xy')+","+round(p84.tmXY2.Y,'xy');
+    var LLh97 = round(p84.LLh97.LatY,'ll')+","+round(p84.LLh97.LngX,'ll');
+    var xy97 = round(p84.tmXY97.X,'xy')+","+round(p84.tmXY97.Y,'xy');
     
     TPname = cal67getTPowerSub(p84.tmXY2.X,p84.tmXY2.Y)
        
@@ -1634,7 +1643,7 @@ for(var i = 0 ; i < num ; i++ ){
 
 var LatY = goutputData[i].LLh2.LatY
 var LngX = goutputData[i].LLh2.LngX
-var LLh2 = round(LatY,8) +","+ round(LngX,8)
+var LLh2 = round(LatY,'ll') +","+ round(LngX,'ll')
 var comment = LLh2 + "<br/>" + goutputData[i].cmt
 
 var point = new google.maps.LatLng(LatY,LngX);
@@ -2089,49 +2098,49 @@ for(var i = 0 ; i < outputData.length ; i++) // 開始處理所有資料
 tmp[i].push(i+1) ; // 第一個加入的是"資料編號"
 
 if(chkLLh1.checked )
-{tmp[i].push(round(outputData[i].LLh1.LatY,8),
-             round(outputData[i].LLh1.LngX,8),
-             round(outputData[i].LLh1.h,2) ); } // LLh1
+{tmp[i].push(round(outputData[i].LLh1.LatY,'ll'),
+             round(outputData[i].LLh1.LngX,'ll'),
+             round(outputData[i].LLh1.h,'xy') ); } // LLh1
 
 if(chktmXY1.checked )
-{tmp[i].push(round(outputData[i].tmXY1.X,2),
-             round(outputData[i].tmXY1.Y,2),
-             round(outputData[i].tmXY1.h,2) ); } // TMxy1
+{tmp[i].push(round(outputData[i].tmXY1.X,'xy'),
+             round(outputData[i].tmXY1.Y,'xy'),
+             round(outputData[i].tmXY1.h,'xy') ); } // TMxy1
 
 if(chkLLh2.checked )
-{tmp[i].push(round(outputData[i].LLh2.LatY,8),
-             round(outputData[i].LLh2.LngX,8),
-             round(outputData[i].LLh2.h,2) ); } // LLh2
+{tmp[i].push(round(outputData[i].LLh2.LatY,'ll'),
+             round(outputData[i].LLh2.LngX,'ll'),
+             round(outputData[i].LLh2.h,'xy') ); } // LLh2
 
 if(chktmXY2.checked )
-{tmp[i].push(round(outputData[i].tmXY2.X,2),
-             round(outputData[i].tmXY2.Y,2),
-             round(outputData[i].tmXY2.h,2) ); } // TMxy2
+{tmp[i].push(round(outputData[i].tmXY2.X,'xy'),
+             round(outputData[i].tmXY2.Y,'xy'),
+             round(outputData[i].tmXY2.h,'xy') ); } // TMxy2
 
 if(chkXYZ1.checked ) 
-{tmp[i].push(outputData[i].XYZ1.X.toFixed(2),
-             outputData[i].XYZ1.Y.toFixed(2),
-             outputData[i].XYZ1.Z.toFixed(2)); } // XYZ1
+{tmp[i].push(round(outputData[i].XYZ1.X,'xy'),
+  round(outputData[i].XYZ1.Y,'xy'),
+  round(outputData[i].XYZ1.Z,'xy')); } // XYZ1
 
 if(chkXYZ0.checked ) 
-{tmp[i].push(outputData[i].XYZ0.X.toFixed(2),
-             outputData[i].XYZ0.Y.toFixed(2), 
-             outputData[i].XYZ0.Z.toFixed(2)); } // XYZ0
+{tmp[i].push(round(outputData[i].XYZ0.X,'xy'),
+  round(outputData[i].XYZ0.Y,'xy'), 
+  round(outputData[i].XYZ0.Z,'xy')); } // XYZ0
 
 if(chkXYZ2.checked ) 
-{tmp[i].push(outputData[i].XYZ2.X.toFixed(2),
-             outputData[i].XYZ2.Y.toFixed(2),
-             outputData[i].XYZ2.Z.toFixed(2)); } // XYZ2
+{tmp[i].push(round(outputData[i].XYZ2.X,'xy'),
+  round(outputData[i].XYZ2.Y,'xy'),
+  round(outputData[i].XYZ2.Z,'xy')); } // XYZ2
 
 if(chkTPname1.checked)
-{var x1 = outputData[i].tmXY1.X.toFixed(2);
- var y1 = outputData[i].tmXY1.Y.toFixed(2);
+{var x1 = round(outputData[i].tmXY1.X,'xy');
+ var y1 = round(outputData[i].tmXY1.Y,'xy');
  var tpname1 = cal67getTPowerSub(x1,y1);
 tmp[i].push(tpname1); }                        // TPName1
 
 if(chkTPname2.checked)
-{var x2 = outputData[i].tmXY2.X.toFixed(2);
- var y2 = outputData[i].tmXY2.Y.toFixed(2);
+{var x2 = round(outputData[i].tmXY2.X,'xy');
+ var y2 = round(outputData[i].tmXY2.Y,'xy');
  var tpname2 = cal67getTPowerSub(x2,y2);
 tmp[i].push(tpname2); }                       // TPName2
 
@@ -2152,8 +2161,8 @@ if(Address1.checked){
        
 var geocodeRun = self.setInterval(function(){
 
-var lat1 = outputData[i].LLh1.LatY.toFixed(8)
-var lng1 = outputData[i].LLh1.LngX.toFixed(8)
+var lat1 = round(outputData[i].LLh1.LatY,'ll')
+var lng1 = round(outputData[i].LLh1.LngX,'ll')
 var latlng1 = new google.maps.LatLng(lat1,lng1)
 
     geocoder.geocode({'latLng': latlng1},function(results, status)
@@ -2171,8 +2180,8 @@ if(Address2.checked){
 
 var geocodeRun = self.setInterval(function(){
 
-var lat2 = outputData[i].LLh2.LatY.toFixed(8)
-var lng2 = outputData[i].LLh2.LngX.toFixed(8)
+var lat2 = round(outputData[i].LLh2.LatY,'ll')
+var lng2 = round(outputData[i].LLh2.LngX,'ll')
 var latlng2 = new google.maps.LatLng(lat2,lng2)
 
     geocoder.geocode({'latLng': latlng2},function(results, status)
