@@ -178,24 +178,29 @@ DmName: <input id="DatumName.1" name="DatumSetData" value="DatumName" />
     </div>
   </div>
   <div class="tr">
-    <div class="td">
-      <div>Rx</div>
-      <div><input id="Rx.1" name="DatumSetData" value="Rx" /></div>
+    <div style="display:none" id="Ru1">
+      <input value="asec"/>
+      <a>asec</a><a>rad</a>
     </div>
     <div class="td">
-      <div>Ry</div>
-      <div><input id="Ry.1" name="DatumSetData" value="Ry" /></div>
+      <div>Rx<b class="Ru1" onclick="asec_rad('Ru1')">(<a>asec</a>)</b></div>
+      <div><input class= "Ru1v" id="Rx.1" name="DatumSetData" value="Rx" /></div>
+    </div>
+    <div class="td">
+      <div>Ry<b class="Ru1" onclick="asec_rad('Ru1')">(<a>asec</a>)</b></div>
+      <div><input class= "Ru1v" id="Ry.1" name="DatumSetData" value="Ry" /></div>
       <div></div>
     </div>
     <div class="td">
-      <div>Rz</div>
-      <div><input id="Rz.1" name="DatumSetData" value="Rz" /></div>
+      <div>Rz<b class="Ru1" onclick="asec_rad('Ru1')">(<a>asec</a>)</b></div>
+      <div><input class="Ru1v" id="Rz.1" name="DatumSetData" value="Rz" /></div>
     </div>
   </div>
   <div class="tr">
+    <input style="display: none;" id="sfu1" value="ppm"/>
     <div class="td">
-    <div>sf</div>
-    <div><input id="sfppm.1" name="DatumSetData" value="sf" /></div>
+      <div>Scale Factor<b class="sfu1" onclick="sf_s('sfu1')">(<a>ppm</a><a style="display:none">unitless</a>)</b></div>
+    <div><input class="sfu1v" id="sfppm.1" name="DatumSetData" value="sf" /></div>
   </div>
   </div>
 </div>
@@ -277,23 +282,28 @@ DmName: <input id="DatumName.2" name="DatumSetData" value="DatumName" />
     </div>
   </div>
   <div class="tr">
-    <div class="td">
-      <div>Rx </div>
-      <div><input id="Rx.2" name="DatumSetData" value="Rx" /></div>
+    <div style="display:none" id="Ru2">
+      <input value="asec"/>
+      <a>asec</a><a>rad</a>
     </div>
     <div class="td">
-      <div>Ry </div>
-      <div><input id="Ry.2" name="DatumSetData" value="Ry" /></div>
+      <div>Rx<b class="Ru2" onclick="asec_rad('Ru2')">(<a>asec</a>)</b></div>
+      <div><input class= "Ru2v" id="Rx.2" name="DatumSetData" value="Rx" /></div>
     </div>
     <div class="td">
-      <div>Rz </div>
-      <div><input id="Rz.2" name="DatumSetData" value="Rz" /></div>
+      <div>Ry<b class="Ru2" onclick="asec_rad('Ru2')">(<a>asec</a>)</b></div>
+      <div><input class= "Ru2v" id="Ry.2" name="DatumSetData" value="Ry" /></div>
+    </div>
+    <div class="td">
+      <div>Rz<b class="Ru2" onclick="asec_rad('Ru2')">(<a>asec</a>)</b></div>
+      <div><input class="Ru2v" id="Rz.2" name="DatumSetData" value="Rz" /></div>
     </div>  
   </div>
   <div class="tr">
+    <input style="display: none;" id="sfu2" value="ppm"/>
     <div class="td">
-      <div>sf</div>
-      <div><input id="sfppm.2" name="DatumSetData" value="sf" /></div>
+      <div>Scale Factor<b class="sfu2" onclick="sf_s('sfu2')">(<a>ppm</a><a style="display:none">unitless</a>)</b></div>
+      <div><input class="sfu2v" id="sfppm.2" name="DatumSetData" value="sf" /></div>
     </div>  
   </div>
 </div>
@@ -334,6 +344,8 @@ TMset: <input id="TMdeg.2" name="tmSetData" value="TMdeg" />
 
 </form>
 <hr />
+<a href="https://en.wikipedia.org/wiki/Minute_and_second_of_arc">asec:arc second</a>
+<hr/>
 <div>任意門:(2021.01.19 已檢查)</div>
 <a href="https://wiki.osgeo.org/wiki/Taiwan_Power_Company_grid">電力座標wiki</a>
 <a href="http://gis.thl.ncku.edu.tw/coordtrans/coordtrans.aspx">成大Web</a>
@@ -375,6 +387,11 @@ function deg2rad(deg){var rad = deg*PI/180 ; return rad;} // 度轉徑 func. d2r
 
 function rad2deg(rad){var deg = rad*180/PI ; return deg;} // 徑轉度 func. r2d
 
+function sf_ppm(s,u){
+  if(u=="ppm") s = (s - 1) * 1000000  ;
+  if(u=="unitless") s = 1 + s / 1000000 ;
+  return s;
+}
 // 2021.01.25 javascript round solution
 // http://www.jacklmoore.com/notes/rounding-in-javascript/
 // 2021.01.30 小數位預設值與標籤識別 
@@ -383,9 +400,66 @@ function round(value, decimals) {
     case 'xy': decimals = 2; break;
     case 'll': decimals = 6; break;
     case undefined : decimals = 0; break;
-    default: decimals = 8;
+    default: decimals = parseInt(decimals);
   }
+  if(!decimals) decimals = 8;
   return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+}
+
+// 2021.03.03: rad degree switch ; sf switch
+function asec_rad(n){ 
+  // input value
+  var div = document.getElementById(n);
+  var arr = div.children;
+  var unit = arr[0].value;
+  var unit1 = arr[1].text;
+  var unit2 = arr[2].text;
+  unit = unit1, unit1=unit2, unit2=unit;
+  unit = unit1;
+  arr[0].setAttribute('value', unit );
+  arr[1].text = unit1;
+  arr[2].text = unit2;
+  // name
+  var arr = document.getElementsByClassName(n);
+  for( var i=0; i < arr.length; i++ ){
+    var a = arr[i].children[0];
+    a.text = unit;
+  }
+  // calculate
+  var a,b,func;
+  if(unit=="rad") func = deg2rad, a=1/3600, b=8;
+  if(unit=="asec") func = rad2deg, a=3600, b=4;
+  var arr = document.getElementsByClassName(n+"v");
+  for(var i=0; i < arr.length; i++){
+    var input = arr[i];
+    var v = parseFloat(input.value);
+    input.value = round(func(v)*a,b);
+  }
+}
+//
+function sf_s(n){
+  // input value
+  var input = document.getElementById(n);
+  var unit = input.getAttribute('value');
+  // name 
+  var b = document.getElementsByClassName(n)[0];
+  var a0 = b.children[0], a1 = b.children[1];
+  var a ="", a0t = a0.text, a1t = a1.text;
+  a = a0t, a0t = a1t, a1t = a;
+  a0.text = a0t, a1.text = a1t;
+  input.setAttribute('value', a0t), unit = a0t;
+  // calculate
+  var input = document.getElementsByClassName(n+"v")[0];
+  var s = parseFloat(input.value); 
+  if(unit=="ppm"){
+    s = sf_ppm(s,unit);
+    s = round(s,2);
+  } 
+  if(unit=="unitless"){
+    s = sf_ppm(s,unit);
+    s = round(s,8);
+  }
+  input.value = s;
 }
 
 //---TaipowerGlobal var.---
@@ -2405,6 +2479,19 @@ var rx = parseFloat(document.getElementById("Rx."+set).value) // id大小寫注�
 var ry = parseFloat(document.getElementById("Ry."+set).value) //ie不分辨反而不好
 var rz = parseFloat(document.getElementById("Rz."+set).value)
 var sfppm = parseFloat(document.getElementById("sfppm."+set).value)
+
+// 2021.03.03: rx.y.z & sf detect
+var r_unit = document.getElementById("Ru"+set).children[0].value;
+var sf_unit = document.getElementById("sfu"+set).value;
+if(r_unit=="rad"){ var b = 3600;
+  rx=rad2deg(rx)*b;
+  ry=rad2deg(ry)*b;
+  rz=rad2deg(rz)*b;
+}
+if(sf_unit=="unitless"){
+  var s = sfppm;
+  sfppm = sf_ppm(s,"ppm");
+}
 
  rx = deg2rad(rx/3600) //來源限定是 ArcSec 弧度秒,故先除 3600 換成度
  ry = deg2rad(ry/3600) // 再轉徑度量rad
