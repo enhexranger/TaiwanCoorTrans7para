@@ -1547,6 +1547,16 @@ objdata.value = dataString //for firefox
 //-------------------------------------------------------------------------
 
 function callQuickSet(set){
+  // 強制轉回 asec & ppm
+  var arr = [1,2];
+  for(var i=0;i<arr.length;i++){
+    var a = arr[i];
+    var r_unit = document.getElementById("Ru"+a).children[0].value;
+    var sf_unit = document.getElementById("sfu"+a).value;
+    if(r_unit=="rad") asec_rad("Ru"+a);
+    if(sf_unit=="unitless") sf_s("sfu"+a);  
+  }
+  
 var qkset = document.getElementById("quickSetSlt").value
 
 if(set){ qkset = set}
@@ -1631,6 +1641,12 @@ getSltTMdata(2);
 //-------------------------------------------------------------------------
 
 function getSltDatumData(num){
+  // 強制轉回 asec & ppm
+  var r_unit = document.getElementById("Ru"+num).children[0].value;
+  var sf_unit = document.getElementById("sfu"+num).value;
+  if(r_unit=="rad") asec_rad("Ru"+num);
+  if(sf_unit=="unitless") sf_s("sfu"+num);
+
   // 取得 select.value 填入 input
     
   //alert("func. getDatumData(" + num + ") exec.ing")
