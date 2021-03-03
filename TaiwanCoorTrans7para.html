@@ -372,6 +372,10 @@ TMset: <input id="TMdeg.2" name="tmSetData" value="TMdeg" />
     var GoutputData = [];  // 輸出資料物件再存成全域型態
   //var GoutputDataPRN = [];
 
+    const IconStyle1 ="http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png";
+    const IconStyle2 ="http://maps.google.com/mapfiles/kml/shapes/info-i.png";
+    const IconStyle3 ="http://maps.google.com/mapfiles/kml/shapes/triangle.png"; 
+
 var PI = Math.PI
 
 function POW(input,lvl){var output = Math.pow(input,lvl) ; return output;}
@@ -562,7 +566,7 @@ function(results, status){
         var box = results[0].geometry.viewport
             
         MapG.setCenter(pos);
-        createMarker(MapG,pos,html,cmt,"");      
+        createMarker(MapG,pos,html,cmt,"",IconStyle2);      
         MapG.fitBounds(box);
         
 }else{alert("Geocode failed : " + status); }
@@ -627,9 +631,9 @@ function getEventMarkerInfo(event){
      var timecost = "(" + (t2 - t1) + "ms)" ; // 相減得時間差 ms
      mk1info += "<br/>"+"地址: " + GCaddress + timecost;
      
-     createMarker(MapG,GClatlng,GCinfo,GCcmt,""); // geocode
+     createMarker(MapG,GClatlng,GCinfo,GCcmt,"",IconStyle2); // geocode
      
-     createMarker(MapG,latlng,mk1info,mk1cmt,"open"); //click
+     createMarker(MapG,latlng,mk1info,mk1cmt,"open",IconStyle2); //click
      
      createPolyline([latlng,GClatlng]); // click -line-> geocode
 
@@ -637,7 +641,7 @@ function getEventMarkerInfo(event){
       ); // geocoder 本身會慢些處理，如有要繼續執行的程式，則寫在之後
     // end of process2
     }else{
-    createMarker(MapG,latlng,mk1info,mk1cmt,"open"); //click
+    createMarker(MapG,latlng,mk1info,mk1cmt,"open",IconStyle2); //click
     }
     
     // 其他檢查 10m 100m 800x500 是否要生成
@@ -746,7 +750,7 @@ return result
 
 //-------------------------------------------------------------------------
 //map , 座標, info內容, title顯示, 檢查項 open = 產生點就開啟 info窗
-function createMarker(map,latlng,html,cmt,chk){
+function createMarker(map,latlng,html,cmt,chk,style){
 
 var MarkersG = markersG ; var MarkersInfoG = markersInfoG ; // 取用 Global var.
 var MarkerNumObj = document.getElementById("markerNum")
@@ -757,6 +761,7 @@ if(markerCHK(latlng) == true){
 var marker = new google.maps.Marker(
     { position: latlng,
       map: map,
+      icon: style,
       title: cmt } ); //座標,地圖,title:移上點位時顯示黃底小框之資訊
 
    // marker 事件：
@@ -1130,7 +1135,7 @@ var lngCEN = (lng + lngUR)/2
 var cmt = pointObj84[i].cmt
 var latlngCEN = new google.maps.LatLng(latCEN,lngCEN)
  
- createMarker(MapG,latlngCEN,cmt,cmt,"")
+ createMarker(MapG,latlngCEN,cmt,cmt,"",IconStyle3)
 
    } // for i 計算所有 pointObj84
 
@@ -1723,7 +1728,7 @@ var comment = LLh2 + "<br/>" + goutputData[i].cmt
 var point = new google.maps.LatLng(LatY,LngX);
 bounds.extend(point)
 
- createMarker(MapG,point,comment,LLh2,"")
+ createMarker(MapG,point,comment,LLh2,"",IconStyle1)
  } // for i
 
 MapG.fitBounds(bounds)
