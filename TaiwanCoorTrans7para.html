@@ -69,9 +69,9 @@ width: 98%;
 <label>訊息欄:</label>
 <textarea class="ta" cols="60" id="settingView" name="settingView" rows="5"></textarea>
 <input onclick="getInputDataAll()" type="button" value="取得輸入資料" />
-<input onclick="calInputDataAll()" type="button" value="BW七參數" />
-<input onclick="calDataByNCKU67_97All()" type="button" value="成大67轉97" />
-<input onclick="calDataByNCKU97_67All()" type="button" value="成大97轉67" />
+<input onclick="calcInputDataAll()" type="button" value="BW七參數" />
+<input onclick="calcDataByNCKU67_97All()" type="button" value="成大67轉97" />
+<input onclick="calcDataByNCKU97_67All()" type="button" value="成大97轉67" />
 <input onclick="outputData2GMap()" type="button" value="轉換過的onGMap!" />
 <br />
 <div>
@@ -669,7 +669,7 @@ function get_84_97_67_TPName_info(latlng){
     var lat1 = latlng.lat() ; 
     var lng1 = latlng.lng() ;
      
-    var p84 = calWGS84_67_97Sub(lat1,lng1);
+    var p84 = calcWGS84_67_97Sub(lat1,lng1);
     
     var LL1 = round(lat1,'ll')+","+round(lng1,'ll');
     var LL1utm = round(p84.utm.X,'xy')+","+round(p84.utm.Y,'xy');
@@ -678,7 +678,7 @@ function get_84_97_67_TPName_info(latlng){
     var LLh97 = round(p84.LLh97.LatY,'ll')+","+round(p84.LLh97.LngX,'ll');
     var xy97 = round(p84.tmXY97.X,'xy')+","+round(p84.tmXY97.Y,'xy');
     
-    TPname = cal67getTPowerSub(p84.tmXY2.X,p84.tmXY2.Y)
+    TPname = calc67getTPowerSub(p84.tmXY2.X,p84.tmXY2.Y)
        
     var mk1info = [] ;
     mk1info.push("WGS84: "+LL1)
@@ -1469,7 +1469,7 @@ else if(!objXYsetChk.checked && GTPsetStatus == "list")
 } // diaableCngTPSet
 //-------------------------------------------------------------------------
 
-function cal67getTPowerSub(x,y){
+function calc67getTPowerSub(x,y){
 
 x = parseInt(x)
 y = parseInt(y) // 字串轉浮點取整數
@@ -1909,7 +1909,7 @@ else
 
 alert (a+","+b+","+divf)
 
-} // calInputDatumData(set)
+} // chkInputDatumData(set)
 
 //-------------------------------------------------------------------------
 function addDatumOption(pos){
@@ -2161,17 +2161,17 @@ obj_outputData.value = inputData
 
 //-------------------------------------------------------------------------
 
-function calInputDataAll()
+function calcInputDataAll()
 {
 inputDataStr = getInputDataStr() 
 inputData = getInputDataSub(inputDataStr) 
-outputData = calInputData7paraSub(inputData)
+outputData = calcInputData7paraSub(inputData)
 outputDataPRN(outputData)
 
 GoutputData = outputData; // 輸出資料丟一份到 Global var. 
 // OK 的. 不需取了再用. 效能幾乎無差
 
-} // func. calInputDataAll
+} // func. calcInputDataAll
 
 //-------------------------------------------------------------------------
 
@@ -2277,13 +2277,13 @@ if(chkXYZ2.checked )
 if(chkTPname1.checked)
 {var x1 = round(outputData[i].tmXY1.X,'xy');
  var y1 = round(outputData[i].tmXY1.Y,'xy');
- var tpname1 = cal67getTPowerSub(x1,y1);
+ var tpname1 = calc67getTPowerSub(x1,y1);
 tmp[i].push(tpname1); }                        // TPName1
 
 if(chkTPname2.checked)
 {var x2 = round(outputData[i].tmXY2.X,'xy');
  var y2 = round(outputData[i].tmXY2.Y,'xy');
- var tpname2 = cal67getTPowerSub(x2,y2);
+ var tpname2 = calc67getTPowerSub(x2,y2);
 tmp[i].push(tpname2); }                       // TPName2
 
 tmp[i].push(outputData[i].cmt);   // comment
@@ -2379,7 +2379,7 @@ if(AddressCHK.checked)
 
 //-------------------------------------------------------------------------
 
-function calInputData7paraSub(inputData)
+function calcInputData7paraSub(inputData)
 { // get,chk,obj  ; 7para 0=lat,x 1=lng,y 2=h 3=cmt 4=chk 
 var num = inputData.length       // 獲得筆數
 
@@ -2496,11 +2496,11 @@ outputData[i].cmt = inputData[i][3]
  } // for i
 
 return outputData; // i
-} // func. calInputData7paraSub()
+} // func. calcInputData7paraSub()
 
 //-------------------------------------------------------------------------
 
-function tmXY2LLh(tmX,tmY,h,set){
+function tmXY2LLh(tmX,tmY,h,set){ //施工中:計算時不應取頁面參數
 var a = parseFloat(document.getElementById("sma."+set).value)  
 var divf = parseFloat(document.getElementById("divf."+set).value)
 
@@ -2562,7 +2562,7 @@ return objLLh
 
 //-------------------------------------------------------------------------
 
-function LLh2XYZ(LatY,LngX,h,set){ //LLh 2 XYZ
+function LLh2XYZ(LatY,LngX,h,set){ //LLh 2 XYZ 施工中
 var rLatY = deg2rad(LatY)
 var rLngX = deg2rad(LngX) // deg先轉rad
 
@@ -2589,7 +2589,7 @@ return objXYZ  // 傳回 XYZ 物件
 
 //-------------------------------------------------------------------------
 
-function XYZ2XYZ(X1,Y1,Z1,set){ // XYZ1 轉 XYZ2
+function XYZ2XYZ(X1,Y1,Z1,set){ // XYZ1 轉 XYZ2 施工中
 //取參數值 set1 是 1 轉 0  
 var dX = parseFloat(document.getElementById("dX."+set).value)
 var dY = parseFloat(document.getElementById("dY."+set).value)
@@ -2643,7 +2643,7 @@ return objXYZ  // 傳回
 
 //-------------------------------------------------------------------------
 
-function XYZ2LLh(X2,Y2,Z2,set){ // XYZ 轉 LLh
+function XYZ2LLh(X2,Y2,Z2,set){ // XYZ 轉 LLh 施工中
 //取值 XYZ 轉 LLh 時通常 set = 2
 var a = parseFloat(document.getElementById("sma."+set).value)
 var divf = parseFloat(document.getElementById("divf."+set).value)
@@ -2685,7 +2685,7 @@ return objLLh // 傳回 LLh 物件
 
 //-------------------------------------------------------------------------
 
-function LLh2tmXY(LatY,LngX,h,set){
+function LLh2tmXY(LatY,LngX,h,set){ // 施工中
 var rLatY = deg2rad(LatY)
 var rLngX = deg2rad(LngX)
 
@@ -2756,11 +2756,11 @@ return objtmXY
 
 //-------------------------------------------------------------------------
 
-function calDataByNCKU67_97All()
+function calcDataByNCKU67_97All()
 {
 inputDataStr = getInputDataStr() // 取輸入區資料字串
 inputData = getInputDataSub(inputDataStr) // 識別並形成矩陣物件
-outputData = calDataByNCKU_Sub(inputData,1) // 1 = 67->97
+outputData = calcDataByNCKU_Sub(inputData,1) // 1 = 67->97
 outputDataPRN(outputData)
 
 GoutputData = outputData // 輸出資料丟一份到 Global var. 
@@ -2768,11 +2768,11 @@ GoutputData = outputData // 輸出資料丟一份到 Global var.
 
 //-------------------------------------------------------------------------
 
-function calDataByNCKU97_67All()
+function calcDataByNCKU97_67All()
 {
 inputDataStr = getInputDataStr() 
 inputData = getInputDataSub(inputDataStr) 
-outputData = calDataByNCKU_Sub(inputData,2) // 2 = 97->67
+outputData = calcDataByNCKU_Sub(inputData,2) // 2 = 97->67
 outputDataPRN(outputData) 
 
 GoutputData = outputData  
@@ -2780,7 +2780,7 @@ GoutputData = outputData
 
 //-------------------------------------------------------------------------
 
-function calDataByNCKU_Sub(inputData,set){
+function calcDataByNCKU_Sub(inputData,set){
 // set=1=67->97 set=2=97->67
 // 計算輸入資料所需的參數，是直接取用頁面上的設定
 // 得先更改設定再執行輸入資料的計算
@@ -2810,7 +2810,7 @@ loadTMdata(TMset1_TM2,1)
 loadTMdata(TMset2_TM2,2)
 
 
-outputData = calInputData7paraSub(inputData)  
+outputData = calcInputData7paraSub(inputData)  
 // 計算輸入資料，只取 LLh1 tmXY1 ，其他的還是會經過 7para 轉換，多餘計算。
 
 var A= 0.00001549
@@ -2874,11 +2874,11 @@ outputData[i].XYZ0.Z = 0 // 蓋掉 7para 轉得的 XYZ0
 restoreDatumTMsetG() ; // 備份的設定重回頁面
 
 return outputData // i
-}// func. calDataByNCKU_Sub(set)
+}// func. calcDataByNCKU_Sub(set)
 
 //-------------------------------------------------------------------------
 
-function calWGS84_67_97Sub(lat,lng){ // 供 GMap傳回座標運算用函式
+function calcWGS84_67_97Sub(lat,lng){ // 供 GMap傳回座標運算用函式
 // WGS84 latlng 判別選用何種 datum tm 設定
 
 backupDatumTMsetG() ; // 備份 datum tm 設定到 global
