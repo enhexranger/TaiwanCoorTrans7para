@@ -1967,15 +1967,16 @@ function dataTypeChkSub(LatY,LngX,h,cmt,chk,data){
 
 var result = "unknown"
 
-if(!isNaN(LatY) && !isNaN(LngX) ){
+var chkLLhSub = function(LngX,LatY){
+  if(LngX >= -180 && LngX <= 180 && LatY >= -90 && LatY <= 90) result = "LLh" ; 
+};
+
+if(!isNaN(LatY) && !isNaN(LngX) ){ // 如果前兩位是數字
 if(isNaN(h)){ data[3] = data[2] + ";" + data[3] ; data[2] = 0 ; }
 // 如果 h 不是數字，就合併到 cmt 去 ，h再為0
-if(LngX >= -180 && LngX <= 180 && LatY >= -90 && LatY <= 90)
-{result = "LLh" ; }
-// 在 x=-90~90 y=-180~180 之間, 判定為 LLh
-else
-{ result = "xy" } // 其他都視為 xy。
-} // 如果前兩位是數字
+result = "xy"  // 先視為 xy。
+chkLLhSub(LngX,LatY); // 在 x=-90~90 y=-180~180 之間, 判定為 LLh
+} // 如果前兩位是數字.
 
 if(isNaN(LatY) ){ // 如果第一個資料不是數字
 result = "Address" ; // 預設為地址
@@ -1988,23 +1989,23 @@ if(LatY.length <= 11 ){     // 如果在11個字以內
  var str = LatY ; var num = LatY.length ; // 進行電力座標判別
  var area = GAreaNames ; // 取所有電力座標區域
 
-function chkTPnAsub(str,area,result){
+var chkTPnAsub = function(str,area,result){
 
  for(var i = 0 ; i < area.length ; i++)
  {if( str.charAt(0).toUpperCase() == area[i]){ result = "TPnA" ; break; } }
 return result
-} // func. chkTPnASub
+}; // func. chkTPnASub
 
-function chkTPn2345sub(str,result){ 
+var chkTPn2345sub= function(str,result){ 
  if( result == "TPnA" ){ 
    for(var i = 1 ; i <= 4 ; i++){
    if( isNaN(parseInt(str.charAt(i))) )
    {result = "unknown" ; break ; }else{ result = "TPn5" } } } 
 return result
-} // func. chkTPn2345Sub
+}; // func. chkTPn2345Sub
 
 
-function chkTPn67sub(str,result){
+var chkTPn67sub = function(str,result){
  var a1 = str.charAt(5).toUpperCase() , a2 = str.charAt(6).toUpperCase() ;   
  if( result == "TPn5" ){ 
     for(var i = 0 ; i < GchkArea100X.length ; i++){
@@ -2013,23 +2014,23 @@ function chkTPn67sub(str,result){
     for(var i = 0 ; i < GchkArea100Y.length ; i++){
     if( a2 == GchkArea100Y[i] ){result = "TPn7"; break; } } } 
 return result           
-} // func. chkTPn67Sub
+}; // func. chkTPn67Sub
 
-function chkTPn89sub(str,result){
+var chkTPn89sub = function(str,result){
  if( result == "TPn7" ){ // 7,8
    for(var i = 7 ; i <= 8 ; i++){
    if( isNaN(parseInt(str.charAt(i))) )
    {result = "unknown" ; break ; }else{ result = "TPn9" } } } 
 return result
-} // func. chkTPn89Sub
+}; // func. chkTPn89Sub
 
-function chkTPn1011sub(str,result){
+var chkTPn1011sub = function(str,result){
  if( result == "TPn9" ){ // 9,10
    for(var i = 9 ; i <= 10 ; i++){
    if( isNaN(parseInt(str.charAt(i))) )
    {result = "unknown" ; break ; }else{ result = "TPn11" } } } 
 return result
-} // func. chkTPn1011Sub
+}; // func. chkTPn1011Sub
 
  if( num == 1 ){ result = chkTPnAsub(str,area,result); }
                  // if 1
@@ -2076,8 +2077,7 @@ chk = chk.toUpperCase(); // 轉大寫
 if( chk == "XY") // 使用者自行輸入了欄位 4=chk 
 {result = "xy";} // 欄位4或為前項判別更改，再更改回來
 
-if( chk == "LLH")
-{result = "LLh";}
+if( chk == "LLH") chkLLhSub(LngX,LatY); // 使用者強制定義為經緯，再次檢查
 
 if( chk == "ADDRESS")
 {result = "Address";}
