@@ -2657,15 +2657,13 @@ if(sf_unit=="unitless"){
 
 // setting override:
 if(datum){
-  a = DATUM[datum][0];
-  divf = DATUM[datum][1];
-  dX = DATUM[datum][2];
-  dY = DATUM[datum][3];  
-  dZ = DATUM[datum][4];  
-  rx = DATUM[datum][5];  
-  ry = DATUM[datum][6];  
-  rz = DATUM[datum][7];   
-  sfppm = DATUM[datum][8];
+  dX = DATUM[datum][3];
+  dY = DATUM[datum][4];  
+  dZ = DATUM[datum][5];  
+  rx = DATUM[datum][6];  
+  ry = DATUM[datum][7];  
+  rz = DATUM[datum][8];   
+  sfppm = DATUM[datum][9];
 }
 
  rx = deg2rad(rx/3600) //來源限定是 ArcSec 弧度秒,故先除 3600 換成度
