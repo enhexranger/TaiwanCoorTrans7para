@@ -70,8 +70,8 @@ width: 98%;
 <textarea class="ta" cols="60" id="settingView" name="settingView" rows="5"></textarea>
 <input onclick="getInputDataAll()" type="button" value="取得輸入資料" />
 <input onclick="calcInputDataAll()" type="button" value="BW七參數" />
-<input onclick="calcDataByNCKU67_97All()" type="button" value="成大67轉97" />
-<input onclick="calcDataByNCKU97_67All()" type="button" value="成大97轉67" />
+<input onclick="calcDataByNCKU(1)" type="button" value="成大67轉97" />
+<input onclick="calcDataByNCKU(2)" type="button" value="成大97轉67" />
 <input onclick="outputData2GMap()" type="button" value="轉換過的onGMap!" />
 <br />
 <div>
@@ -465,6 +465,22 @@ function sf_s(n){
   }
   input.value = s;
 }
+
+// Datum setting : a(m),1/f,b(m),dX(m),dY(m),dZ(m),Rx(asec),Ry(asec),Rz(asec),sf(ppm) 
+const DATUM = {
+'TWD67':[6378160,298.25,6356774.7192,-730.16,-346.212,-472.186,-7.968,-3.5498,-0.4063,-18.2],
+'TWD97':[6378137,298.257222101,6356752.3141,0,0,0,0,0,0,0],
+'WGS84':[6378137,298.257223563,6356752.31425,0,0,0,0,0,0,0]
+};
+
+// TM setting : Lng0(deg),Lat0(deg),k0,FE(m),FN(m)
+const TM = {
+'TM2-121':[121,0,0.9999,250000,0],
+'TM3-121':[121,0,1,350000,0],
+'TM6-123':[123,0,0.9996,500000,0],
+'TM2-119':[119,0,0.9999,250000,0],
+'TM6-117':[117,0,0.9996,500000,0]
+};
 
 //---TaipowerGlobal var.---
 
@@ -922,9 +938,15 @@ PolygonsG.length = 0 ; } // if polygonsG
 
 //-------------------------------------------------------------------------
 
-function getXmYm2gmapSub(xy67,setX,setY){
+function getXmYm2gmapSub(pt,setX,setY){
+// 也是要偵測 taiwan or penghu
+var lat = pt.LLh2.LatY, lng = pt.LLh2.LngX;
+var x = pt.tmXY2.X, y = pt.tmXY2.Y;
+var d1 = 'TWD67', d2 = 'WGS84', t1='TM2-121', t2='TM6-123';
 
-var x = xy67.tmXY2.X ; var y = xy67.tmXY2.Y
+if(lat >= 119.9 && lat < 122) t1='TM2-121';
+if(lat >= 118 && lat < 119.9 ) t1='TM2-119';
+
 // setXY = (10,10) or (100,100) 對於電力座標數據，只有百位以下才能這麼做
 
 if(setX == 800 && setY == 500){
@@ -952,10 +974,10 @@ var xUR = xDL + setX ; var yUR = yDL + setY ;
 
 var xUL = xDL ; var yUL = yDL + setY ;
 
-var xyDL = tm67xy2wgs84LLh(xDL,yDL,0)
-var xyDR = tm67xy2wgs84LLh(xDR,yDR,0)
-var xyUR = tm67xy2wgs84LLh(xUR,yUR,0)
-var xyUL = tm67xy2wgs84LLh(xUL,yUR,0)
+var xyDL = tp_tm2llh(xDL,yDL,0,'',d1,d2,t1,t2)
+var xyDR = tp_tm2llh(xDR,yDR,0,'',d1,d2,t1,t2)
+var xyUR = tp_tm2llh(xUR,yUR,0,'',d1,d2,t1,t2)
+var xyUL = tp_tm2llh(xUL,yUR,0,'',d1,d2,t1,t2)
 
 var lat   = xyDL.p2.LatY ; var lng   = xyDL.p2.LngX
 var latDR = xyDR.p2.LatY ; var lngDR = xyDR.p2.LngX
@@ -999,6 +1021,17 @@ return areaNames
 //-------------------------------------------------------------------------
 
 function getTPset2GMap(){
+// Taiwan: TWD67-TM2-121 轉 WGS84-TM2-121
+// PengHu: TWD67-TM2-119 轉 WGS84-TM2-119
+// 偵測目前 Tipower 表單(台灣 OR 澎湖)
+var TPsetSlt = document.getElementById("quickTPsetSlt").value
+
+var d1,d2,t1,t2;
+if(TPsetSlt == "TPset1" ) d1 = 'TWD67', t1='TM2-121', d2 = 'WGS84', t2 = 'TM2-121';
+
+
+if(TPsetSlt == "TPset2" ) d1 = 'TWD67', t1='TM2-119', d2 = 'WGS84', t2 = 'TM2-119';
+
 //固定會去掉 矩陣第一列，每列第一個，超過 5 個都去除
 inputObj =  getInputObj(GtaipowerSet)
 inputObj.shift() // 砍掉第一列註解行
@@ -1061,9 +1094,9 @@ for(var i = 0 , num=pointObj.length ; i < num ; i++ ){
 pointObj84[i] = new Object() ;
 // origin
 var x = pointObj[i].x ; var y = pointObj[i].y ; var h = pointObj[i].h ;
-var out = tm67xy2wgs84LLh(x,y,h) ;
+var out = tp_tm2llh(x,y,h,'',d1,d2,t1,t2) ;
 // out.p1 = LLh1(ex.67) out.p2 = LLh2(ex.84)
-var fix = chkTM1CMsetFix84llh(out)
+var fix = chkTM1CMsetFix84llh(out,d1,d2,t1,t2)
 // ex.檢查 lng 於 TM2中央經線 = 121 時，是否小於 67-120 度 大於 67-122度
 
 pointObj84[i].x = fix.p2.LatY
@@ -1074,8 +1107,8 @@ pointObj84[i].chk = pointObj[i].chk ;
 
 // DownRight : x+80000
 var x = pointObj[i].DRx ; var y = pointObj[i].DRy ; var h = pointObj[i].DRh ;
-var out = tm67xy2wgs84LLh(x,y,h) ;
-var fix = chkTM1CMsetFix84llh(out) ;
+var out = tp_tm2llh(x,y,h,'',d1,d2,t1,t2) ;
+var fix = chkTM1CMsetFix84llh(out,d1,d2,t1,t2) ;
 
 pointObj84[i].DRx = fix.p2.LatY
 pointObj84[i].DRy = fix.p2.LngX
@@ -1083,8 +1116,8 @@ pointObj84[i].DRh = fix.p2.h
 
 // UpperRight : x+80000 y+50000
 var x = pointObj[i].URx ; var y = pointObj[i].URy ; var h = pointObj[i].URh ;
-var out = tm67xy2wgs84LLh(x,y,h) ;
-var fix = chkTM1CMsetFix84llh(out) ;
+var out = tp_tm2llh(x,y,h,'',d1,d2,t1,t2) ;
+var fix = chkTM1CMsetFix84llh(out,d1,d2,t1,t2) ;
 
 pointObj84[i].URx = fix.p2.LatY
 pointObj84[i].URy = fix.p2.LngX
@@ -1092,8 +1125,8 @@ pointObj84[i].URh = fix.p2.h
 
 // UpperLeft : y+50000
 var x = pointObj[i].ULx ; var y = pointObj[i].ULy ; var h = pointObj[i].ULh ;
-var out = tm67xy2wgs84LLh(x,y,h) ;
-var fix = chkTM1CMsetFix84llh(out) ;
+var out = tp_tm2llh(x,y,h,'',d1,d2,t1,t2) ;
+var fix = chkTM1CMsetFix84llh(out,d1,d2,t1,t2) ;
 
 pointObj84[i].ULx = fix.p2.LatY
 pointObj84[i].ULy = fix.p2.LngX
@@ -1193,12 +1226,8 @@ return result
 
 //----------------------------------------------------------------
 
-function tm67xy2wgs84LLh(x,y,h,chk){
-// 20110617: 這應該只是個 xy 轉 llh 的 func. 可能得再正名
-// 供查表67xy轉 84 llh ，分區四角點
-// 不鎖設定！ 因為可以是 67-tm2-119,121 
-//台灣地區請確定預設是 twd67-tm2-121 與 目的為 wgs84-(無須 xy 則 tm 設定任意)
-
+function tp_tm2llh(x,y,h,chk,d1,d2,t1,t2){
+// 供 Taipower 表單轉換: 67xy轉 84llh ，分區四角點
 
   if(chk == "LLh"){           // chk = LLh 時 xyh 轉浮點 LLh1
   objLLh1 = new Object()      
@@ -1206,13 +1235,13 @@ function tm67xy2wgs84LLh(x,y,h,chk){
   objLLh1.LngX = parseFloat(y)
   objLLh1.h = parseFloat(h)  
   }
-  else{objLLh1 = tmXY2LLh(x, y, h, 1);} //進來平面xyh 轉 LLh1
+  else{objLLh1 = tmXY2LLh(x, y, h, 1, d1,t1);} //進來平面xyh 轉 LLh1
   // if chk
     
-  objXYZ1 = LLh2XYZ(objLLh1.LatY, objLLh1.LngX, 0, 1);
-  objXYZ0 = XYZ2XYZ(objXYZ1.X, objXYZ1.Y, objXYZ1.Z, 1);
-  objXYZ2 = XYZ2XYZ(objXYZ0.X, objXYZ0.Y, objXYZ0.Z, 2); 
-  objLLh2 = XYZ2LLh(objXYZ2.X, objXYZ2.Y, objXYZ2.Z, 2);
+  objXYZ1 = LLh2XYZ(objLLh1.LatY, objLLh1.LngX, 0, 1, d1);
+  objXYZ0 = XYZ2XYZ(objXYZ1.X, objXYZ1.Y, objXYZ1.Z, 1, d1);
+  objXYZ2 = XYZ2XYZ(objXYZ0.X, objXYZ0.Y, objXYZ0.Z, 2, d2); 
+  objLLh2 = XYZ2LLh(objXYZ2.X, objXYZ2.Y, objXYZ2.Z, 2, d2);
 
 var output = new Object()
 output.p1 = objLLh1
@@ -1223,10 +1252,10 @@ return output
 
 //-------------------------------------------------------------------------
 
-function chkTM1CMsetFix84llh(objLLh){
+function chkTM1CMsetFix84llh(objLLh,d1,d2,t1,t2){
 // 傳入的 LLh 檢查是否超出 source=set1 CM=Lng0+- 的範圍
-var Lng0 = parseFloat(document.getElementById("Lng0.1").value)
-var FE = parseInt(document.getElementById("FE.1").value)
+var Lng0 = TM[t1][0];
+var FE = TM[t1][3];
 
 var Lng0max ; var Lng0min ; // ex. Lng0 = 121 , taiwan 
 
@@ -1245,8 +1274,8 @@ else if (FE == 500000)
 else
 {Lng0max = Lng0 + 1 ; Lng0min = Lng0 - 1} // 預設正負2度
 
-var out1 = tm67xy2wgs84LLh(lat1,Lng0max,h1,"LLh")
-var out2 = tm67xy2wgs84LLh(lat1,Lng0min,h1,"LLh") 
+var out1 = tp_tm2llh(lat1,Lng0max,h1,"LLh",d1,d2,t1,t2)
+var out2 = tp_tm2llh(lat1,Lng0min,h1,"LLh",d1,d2,t1,t2) 
 // 其實是 LLh1 轉 LLh2 , 得注意來源目的設定是否為 67,84
 var Lng84Max = out1.p2.LngX
 var Lng84Min = out2.p2.LngX
@@ -1341,11 +1370,11 @@ objMsgArea.value = GtaipowerSet // firefox
 function callTPsetSlt(){
 var TPsetSlt = document.getElementById("quickTPsetSlt").value
 
-if(TPsetSlt == "TPset1" )
-{callTPSet(1); callQuickSet("set67to97"); }
+if(TPsetSlt == "TPset1" ) callTPSet(1); 
+  //callQuickSet("set67to97"); }
 
-if(TPsetSlt == "TPset2" )
-{callTPSet(2); callQuickSet("set67to97PH"); }
+if(TPsetSlt == "TPset2" ) callTPSet(2); 
+//callQuickSet("set67to97PH"); }
 
 } // func. callTPsetSlt
 
@@ -1687,39 +1716,33 @@ getSltTMdata(2);
 
 //-------------------------------------------------------------------------
 
-function getSltDatumData(num){
+function getSltDatumData(num){ // HTML
   // 強制轉回 asec & ppm
   var r_unit = document.getElementById("Ru"+num).children[0].value;
   var sf_unit = document.getElementById("sfu"+num).value;
   if(r_unit=="rad") asec_rad("Ru"+num);
   if(sf_unit=="unitless") sf_s("sfu"+num);
 
-  // 取得 select.value 填入 input
-    
-  //alert("func. getDatumData(" + num + ") exec.ing")
-  
-  var obj_whatDatumSet = document.forms[num].whatDatumSet.value; //string
-  obj_whatDatumSet = obj_whatDatumSet.split(",");
-  //取 select set 1,2 的 whatDatumSet.value 並逗號分割成值集合陣列   
-  var obj_DatumSetData = document.forms[num].DatumSetData
-  for(var  i=0 ; i < obj_DatumSetData.length ; i++)
-  {obj_DatumSetData[i].value = obj_whatDatumSet[i]; }
+  // 取得選取的Datum設定填到表單內 
+  var whatDatumSetStr = document.forms[num].whatDatumSet.value; //string
+  var paras = whatDatumSetStr.split(",");
+  // 取表單 填值  
+  var datumSetDatas = document.forms[num].DatumSetData
+  for(var  i=0 ; i < datumSetDatas.length ; i++)
+  {datumSetDatas[i].value = paras[i]; }
   // 取 input datumSetData , 把 whatDatumSet 值集合0~10依序填入 
 } // func.getSltDatumData()
 
 //-------------------------------------------------------------------------
   
-function getSltTMdata(num){
-  // 取得 select.value 填入 input
-  
-    //alert("func. getTMdata("+num+") exec.ing")
-    
-    var obj_whatTMset = document.forms[num].whatTMset.value; 
-    obj_whatTMset = obj_whatTMset.split(",") 
+function getSltTMdata(num){ // HTML
+  // 取得選取的TM設定填到表單內
+    var whatTMsetStr = document.forms[num].whatTMset.value; 
+    var paras = whatTMsetStr.split(",") 
     // 取select whatTMset.value 分割值成各項值集合陣列    
-    var obj_tmSetData = document.forms[num].tmSetData 
-    for(var i = 0 ; i < obj_tmSetData.length ; i++) // i = 0~5 
-    {obj_tmSetData[i].value = obj_whatTMset[i];} 
+    var tmSetDatas = document.forms[num].tmSetData 
+    for(var i = 0 ; i < tmSetDatas.length ; i++) // i = 0~5 
+    {tmSetDatas[i].value = paras[i];} 
     //取input tmSetData 同名集合 , 依序給值，input 物件值就會更新顯示
 } // func. getSltTMdata()
 
@@ -1752,22 +1775,22 @@ return TMsetting
 
 //-------------------------------------------------------------------------
 
-function loadDatumData(DatumSet,set){
+function loadDatumData(datumSet,set){ // HTML
 
-var obj_DatumSetData = document.forms[set].DatumSetData
+var datumSetDatas = document.forms[set].DatumSetData
 
-  for( var i = 0 ; i < obj_DatumSetData.length ; i++ )
-  {obj_DatumSetData[i].value = DatumSet[i]; }
+  for( var i = 0 ; i < datumSetDatas.length ; i++ )
+  {datumSetDatas[i].value = datumSet[i]; }
 }
 
 //-------------------------------------------------------------------------
 
-function loadTMdata(TMset,set){
+function loadTMdata(arr,set){ // HTML
 
-var obj_tmSetData = document.forms[set].tmSetData 
+var tmSetDatas = document.forms[set].tmSetData 
 
-    for( var i = 0 ; i < obj_tmSetData.length ; i++ ) // i = 0~5 
-    { obj_tmSetData[i].value = TMset[i]; } 
+    for( var i = 0 ; i < tmSetDatas.length ; i++ ) // i = 0~5 
+    { tmSetDatas[i].value = arr[i]; } 
 }
 
 //-------------------------------------------------------------------------
@@ -2140,8 +2163,8 @@ return result
 //-------------------------------------------------------------------------
 
 function getInputDataAll(){
-inputDataStr = getInputDataStr()    // 取得輸入區字串
-inputData = getInputDataSub(inputDataStr) // 識別型態並轉成矩陣物件
+var inputDataStr = getInputDataStr()    // 取得輸入區字串
+var inputData = getInputDataSub(inputDataStr) // 識別型態並轉成矩陣物件
 UpdateSettingViewSub(inputData) //矩陣物件輸出到觀看區
 } //  func. getInputDataAll()
 
@@ -2161,11 +2184,11 @@ obj_outputData.value = inputData
 
 //-------------------------------------------------------------------------
 
-function calcInputDataAll()
+function calcInputDataAll() // 依表單參數計算
 {
-inputDataStr = getInputDataStr() 
-inputData = getInputDataSub(inputDataStr) 
-outputData = calcInputData7paraSub(inputData)
+var inputDataStr = getInputDataStr() 
+var inputData = getInputDataSub(inputDataStr) 
+var outputData = calcInputData7paraSub(inputData)
 outputDataPRN(outputData)
 
 GoutputData = outputData; // 輸出資料丟一份到 Global var. 
@@ -2379,7 +2402,7 @@ if(AddressCHK.checked)
 
 //-------------------------------------------------------------------------
 
-function calcInputData7paraSub(inputData)
+function calcInputData7paraSub(inputData,d1,d2,t1,t2)
 { // get,chk,obj  ; 7para 0=lat,x 1=lng,y 2=h 3=cmt 4=chk 
 var num = inputData.length       // 獲得筆數
 
@@ -2412,7 +2435,7 @@ if(inputData[i][4] == "LLh" )
   objLLh1[i].h = parseFloat(inputData[i][2]);
   objLLh1[i].set = 1;
 
-  objTMxy1[i] = LLh2tmXY(objLLh1[i].LatY, objLLh1[i].LngX, objLLh1[i].h ,1);
+  objTMxy1[i] = LLh2tmXY(objLLh1[i].LatY, objLLh1[i].LngX, objLLh1[i].h ,1,d1,t1);
   // 先將輸入資料建立成物件 LLh1 另將經緯壓平得 tmXY1
 }
 else if(inputData[i][4] == "xy" )
@@ -2422,7 +2445,7 @@ else if(inputData[i][4] == "xy" )
   objTMxy1[i].h = parseFloat(inputData[i][2]); 
   objTMxy1[i].set = 1; 
   // 如果已是 tmXY1 , 建立 tmXY1 物件，再產生 LLh1
-  objLLh1[i] = tmXY2LLh(objTMxy1[i].X, objTMxy1[i].Y, objTMxy1[i].h, 1);
+  objLLh1[i] = tmXY2LLh(objTMxy1[i].X, objTMxy1[i].Y, objTMxy1[i].h, 1,d1,t1);
 }
 else if(inputData[i][4] == "TPnA" )
 {
@@ -2432,7 +2455,7 @@ else if(inputData[i][4] == "TPnA" )
   objTMxy1[i].Y = parseFloat(r['y']);
   objTMxy1[i].h = parseFloat(inputData[i][2]); 
   objTMxy1[i].set = 1; 
-  objLLh1[i] = tmXY2LLh(objTMxy1[i].X, objTMxy1[i].Y, objTMxy1[i].h, 1);
+  objLLh1[i] = tmXY2LLh(objTMxy1[i].X, objTMxy1[i].Y, objTMxy1[i].h, 1,d1,t1);
 }
 else if(inputData[i][4] == "TPn5" )
 {
@@ -2442,7 +2465,7 @@ else if(inputData[i][4] == "TPn5" )
   objTMxy1[i].Y = parseFloat(r['y']);
   objTMxy1[i].h = parseFloat(inputData[i][2]); 
   objTMxy1[i].set = 1; 
-  objLLh1[i] = tmXY2LLh(objTMxy1[i].X, objTMxy1[i].Y, objTMxy1[i].h, 1);
+  objLLh1[i] = tmXY2LLh(objTMxy1[i].X, objTMxy1[i].Y, objTMxy1[i].h, 1,d1,t1);
 }
 else if(inputData[i][4] == "TPn7" )
 {
@@ -2452,7 +2475,7 @@ else if(inputData[i][4] == "TPn7" )
   objTMxy1[i].Y = parseFloat(r['y']);
   objTMxy1[i].h = parseFloat(inputData[i][2]); 
   objTMxy1[i].set = 1; 
-  objLLh1[i] = tmXY2LLh(objTMxy1[i].X, objTMxy1[i].Y, objTMxy1[i].h, 1);
+  objLLh1[i] = tmXY2LLh(objTMxy1[i].X, objTMxy1[i].Y, objTMxy1[i].h, 1,d1,t1);
 }
 else if(inputData[i][4] == "TPn9" )
 {
@@ -2462,7 +2485,7 @@ else if(inputData[i][4] == "TPn9" )
   objTMxy1[i].Y = parseFloat(r['y']);
   objTMxy1[i].h = parseFloat(inputData[i][2]); 
   objTMxy1[i].set = 1; 
-  objLLh1[i] = tmXY2LLh(objTMxy1[i].X, objTMxy1[i].Y, objTMxy1[i].h, 1);
+  objLLh1[i] = tmXY2LLh(objTMxy1[i].X, objTMxy1[i].Y, objTMxy1[i].h, 1,d1,t1);
 }
 else if(inputData[i][4] == "TPn11" )
 {
@@ -2472,15 +2495,15 @@ else if(inputData[i][4] == "TPn11" )
   objTMxy1[i].Y = parseFloat(r['y']);
   objTMxy1[i].h = parseFloat(inputData[i][2]); 
   objTMxy1[i].set = 1; 
-  objLLh1[i] = tmXY2LLh(objTMxy1[i].X, objTMxy1[i].Y, objTMxy1[i].h, 1);
+  objLLh1[i] = tmXY2LLh(objTMxy1[i].X, objTMxy1[i].Y, objTMxy1[i].h, 1,d1,t1);
 }
 // end if
   // 故一律都是 tmXY 2 LLh 2 XYZ1 XYZ0 XYZ2 LLh2 tmXY2
-  objXYZ1[i] = LLh2XYZ(objLLh1[i].LatY, objLLh1[i].LngX, objLLh1[i].h, 1);
-  objXYZ0[i] = XYZ2XYZ(objXYZ1[i].X, objXYZ1[i].Y, objXYZ1[i].Z, 1);
-  objXYZ2[i] = XYZ2XYZ(objXYZ0[i].X, objXYZ0[i].Y, objXYZ0[i].Z, 2); 
-  objLLh2[i] = XYZ2LLh(objXYZ2[i].X, objXYZ2[i].Y, objXYZ2[i].Z, 2);
-  objTMxy2[i] = LLh2tmXY(objLLh2[i].LatY, objLLh2[i].LngX, objLLh2[i].h, 2); 
+  objXYZ1[i] = LLh2XYZ(objLLh1[i].LatY, objLLh1[i].LngX, objLLh1[i].h, 1,d1);
+  objXYZ0[i] = XYZ2XYZ(objXYZ1[i].X, objXYZ1[i].Y, objXYZ1[i].Z, 1,d1);
+  objXYZ2[i] = XYZ2XYZ(objXYZ0[i].X, objXYZ0[i].Y, objXYZ0[i].Z, 2,d2); 
+  objLLh2[i] = XYZ2LLh(objXYZ2[i].X, objXYZ2[i].Y, objXYZ2[i].Z, 2,d2);
+  objTMxy2[i] = LLh2tmXY(objLLh2[i].LatY, objLLh2[i].LngX, objLLh2[i].h, 2,d2,t2); 
 // func. return 之後可以不必再宣告位址存放
 
 outputData[i] = new Object()
@@ -2500,7 +2523,7 @@ return outputData; // i
 
 //-------------------------------------------------------------------------
 
-function tmXY2LLh(tmX,tmY,h,set){ //施工中:計算時不應取頁面參數
+function tmXY2LLh(tmX,tmY,h,set,datum,tm){ //計算時不應取頁面參數
 var a = parseFloat(document.getElementById("sma."+set).value)  
 var divf = parseFloat(document.getElementById("divf."+set).value)
 
@@ -2520,6 +2543,19 @@ var Lat0 = parseFloat(document.getElementById("Lat0."+set).value)
 var k0 = parseFloat(document.getElementById("k0."+set).value)
 var FE = parseFloat(document.getElementById("FE."+set).value)
 var FN = parseFloat(document.getElementById("FN."+set).value); // 取 TM 參數
+
+// setting override:
+if(datum){
+  a = DATUM[datum][0];
+  divf = DATUM[datum][1];
+}
+if(tm){
+  Lng0 = TM[tm][0];
+  Lat0 = TM[tm][1];
+  k0 = TM[tm][2];
+  FE = TM[tm][3];
+  FN = TM[tm][4];
+}
 
 var rLng0 = deg2rad(Lng0)
 var rLat0 = deg2rad(Lat0)
@@ -2562,12 +2598,18 @@ return objLLh
 
 //-------------------------------------------------------------------------
 
-function LLh2XYZ(LatY,LngX,h,set){ //LLh 2 XYZ 施工中
+function LLh2XYZ(LatY,LngX,h,set,datum){ //LLh 2 XYZ
 var rLatY = deg2rad(LatY)
 var rLngX = deg2rad(LngX) // deg先轉rad
 
 var a = parseFloat(document.getElementById("sma."+set).value)  
 var divf = parseFloat(document.getElementById("divf."+set).value)
+
+// setting override:
+if(datum){
+  a = DATUM[datum][0];
+  divf = DATUM[datum][1];
+}
 
 var f = 1 / divf
 var e2 = 2*f - f*f
@@ -2589,7 +2631,7 @@ return objXYZ  // 傳回 XYZ 物件
 
 //-------------------------------------------------------------------------
 
-function XYZ2XYZ(X1,Y1,Z1,set){ // XYZ1 轉 XYZ2 施工中
+function XYZ2XYZ(X1,Y1,Z1,set,datum){ // XYZ1 轉 XYZ2
 //取參數值 set1 是 1 轉 0  
 var dX = parseFloat(document.getElementById("dX."+set).value)
 var dY = parseFloat(document.getElementById("dY."+set).value)
@@ -2610,6 +2652,19 @@ if(r_unit=="rad"){ var b = 3600;
 if(sf_unit=="unitless"){
   var s = sfppm;
   sfppm = sf_ppm(s,"ppm");
+}
+
+// setting override:
+if(datum){
+  a = DATUM[datum][0];
+  divf = DATUM[datum][1];
+  dX = DATUM[datum][2];
+  dY = DATUM[datum][3];  
+  dZ = DATUM[datum][4];  
+  rx = DATUM[datum][5];  
+  ry = DATUM[datum][6];  
+  rz = DATUM[datum][7];   
+  sfppm = DATUM[datum][8];
 }
 
  rx = deg2rad(rx/3600) //來源限定是 ArcSec 弧度秒,故先除 3600 換成度
@@ -2643,12 +2698,19 @@ return objXYZ  // 傳回
 
 //-------------------------------------------------------------------------
 
-function XYZ2LLh(X2,Y2,Z2,set){ // XYZ 轉 LLh 施工中
+function XYZ2LLh(X2,Y2,Z2,set,datum){ // XYZ 轉 LLh
 //取值 XYZ 轉 LLh 時通常 set = 2
 var a = parseFloat(document.getElementById("sma."+set).value)
 var divf = parseFloat(document.getElementById("divf."+set).value)
 //var b = document.getElementById("smb."+set).value 
 // datum 參數以 a,1/f 為必要, 即使使用者輸入 b 也不採用
+
+// setting override:
+if(datum){
+  a = DATUM[datum][0];
+  divf = DATUM[datum][1];
+}
+
 var f = 1 / divf
 var b = a*(1-f) // b 改以運算而得
 
@@ -2685,7 +2747,7 @@ return objLLh // 傳回 LLh 物件
 
 //-------------------------------------------------------------------------
 
-function LLh2tmXY(LatY,LngX,h,set){ // 施工中
+function LLh2tmXY(LatY,LngX,h,set,datum,tm){
 var rLatY = deg2rad(LatY)
 var rLngX = deg2rad(LngX)
 
@@ -2702,6 +2764,19 @@ var Lat0 = parseFloat(document.getElementById("Lat0."+set).value)
 var k0 = parseFloat(document.getElementById("k0."+set).value)
 var FE = parseFloat(document.getElementById("FE."+set).value)
 var FN = parseFloat(document.getElementById("FN."+set).value); // 取 TM 參數
+
+// setting override:
+if(datum){
+  a = DATUM[datum][0];
+  divf = DATUM[datum][1];
+}
+if(tm){
+  Lng0 = TM[tm][0];
+  Lat0 = TM[tm][1];
+  k0 = TM[tm][2];
+  FE = TM[tm][3];
+  FN = TM[tm][4];
+}
 
 var rLng0 = deg2rad(Lng0)
 var rLat0 = deg2rad(Lat0)
@@ -2756,11 +2831,11 @@ return objtmXY
 
 //-------------------------------------------------------------------------
 
-function calcDataByNCKU67_97All()
+function calcDataByNCKU(n)
 {
 inputDataStr = getInputDataStr() // 取輸入區資料字串
 inputData = getInputDataSub(inputDataStr) // 識別並形成矩陣物件
-outputData = calcDataByNCKU_Sub(inputData,1) // 1 = 67->97
+outputData = calcDataByNCKU_Sub(inputData,n) // 1 = 67->97
 outputDataPRN(outputData)
 
 GoutputData = outputData // 輸出資料丟一份到 Global var. 
@@ -2768,89 +2843,54 @@ GoutputData = outputData // 輸出資料丟一份到 Global var.
 
 //-------------------------------------------------------------------------
 
-function calcDataByNCKU97_67All()
-{
-inputDataStr = getInputDataStr() 
-inputData = getInputDataSub(inputDataStr) 
-outputData = calcDataByNCKU_Sub(inputData,2) // 2 = 97->67
-outputDataPRN(outputData) 
-
-GoutputData = outputData  
-} //func. NCKU 97->67
-
-//-------------------------------------------------------------------------
-
 function calcDataByNCKU_Sub(inputData,set){
 // set=1=67->97 set=2=97->67
-// 計算輸入資料所需的參數，是直接取用頁面上的設定
-// 得先更改設定再執行輸入資料的計算
-
-backupDatumTMsetG() ; // 備份頁面設定
-
-if( set == 1 ){
-var d1_TWD67 = (document.getElementById("TWD67.1").value).split(",")
-var d2_TWD97 = (document.getElementById("TWD97.2").value).split(",")
-
-loadDatumData(d1_TWD67,1)
-loadDatumData(d2_TWD97,2)
-}
-
-if( set == 2){
-var d1_TWD97 = (document.getElementById("TWD97.1").value).split(",")
-var d2_TWD67 = (document.getElementById("TWD67.2").value).split(",")
-
-loadDatumData(d1_TWD97,1)
-loadDatumData(d2_TWD67,2)
-} 
-
-var TMset1_TM2 = (document.getElementById("TM2.1").value).split(",")
-var TMset2_TM2 = (document.getElementById("TM2.2").value).split(",")
-
-loadTMdata(TMset1_TM2,1)
-loadTMdata(TMset2_TM2,2)
-
-
-outputData = calcInputData7paraSub(inputData)  
-// 計算輸入資料，只取 LLh1 tmXY1 ，其他的還是會經過 7para 轉換，多餘計算。
+// backupDatumTMsetG() ; // 備份頁面設定
 
 var A= 0.00001549
 var B= 0.000006521
-var E67 ; var N67; var E97 ; var N97; 
+var E67, N67, E97, N97; 
+
+var func1 = function(){  // TWD67-TM2-121 -> TWD97-TM2-121
+  E67 = outputData[i].tmXY1.X
+  N67 = outputData[i].tmXY1.Y // tmXY1 輸入
+
+  E97 = E67 + 807.8 + A * E67 + B * N67
+  N97 = N67 - 248.6 + A * N67 + B * E67 // 67->97
+
+  outputData[i].tmXY2.X = E97 
+  outputData[i].tmXY2.Y = N97 // 得到 tmXY2, 取代
+
+  objLLh2 = tmXY2LLh(E97, N97, outputData[i].tmXY2.h, 2, d2,t2)
+  // NCKU 公式先得到 tmXY2 再轉 LLh2
+};
+
+var func2 = function(){ // 97 -> 67
+  E97 = outputData[i].tmXY1.X
+  N97 = outputData[i].tmXY1.Y // tmXY1 輸入
+
+  E67 = E97 - 807.8 - A * E97 - B * N97
+  N67 = N97 + 248.6 - A * N97 - B * E97 
+
+  outputData[i].tmXY2.X = E67 
+  outputData[i].tmXY2.Y = N67 // 得到 tmXY2, 取代 
+
+  objLLh2 = tmXY2LLh(E67, N67, outputData[i].tmXY2.h, 2, d2,t2)
+};
+
+var objLLh2,llh2_tmxy2;
+var d1='', d2='', tm1='', tm2='';
+if(set==1) llh2_tmxy2 = func1, d1 = 'TWD67', d2 = 'TWD97', t1='TM2-121', t2='TM2-121';
+if(set==2) llh2_tmxy2 = func2, d1 = 'TWD97', d2 = 'TWD67', t1='TM2-121', t2='TM2-121';
+
+var outputData = calcInputData7paraSub(inputData,d1,d2,tm1,tm2)  
+// 計算輸入資料，只取 LLh1 tmXY1 ，其他的還是會經過 7para 轉換，多餘計算。
 
 for(var i = 0 ; i < outputData.length ; i++) // 計算所有資料
 {
+llh2_tmxy2(); 
 
-if(set == 1) // 1 = 67->97
-{  
-E67 = outputData[i].tmXY1.X
-N67 = outputData[i].tmXY1.Y // tmXY1 輸入
-
-E97 = E67 + 807.8 + A * E67 + B * N67
-N97 = N67 - 248.6 + A * N67 + B * E67 // 67->97
-
-outputData[i].tmXY2.X = E97 
-outputData[i].tmXY2.Y = N97 // 得到 tmXY2 
-
-objLLh2 = tmXY2LLh(E97, N97, outputData[i].tmXY2.h, 2)
-// NCKU 公式先得到 tmXY2 再轉 LLh2
-}
-
-if(set == 2) // 2 = 97 -> 67
-{
-E97 = outputData[i].tmXY1.X
-N97 = outputData[i].tmXY1.Y // tmXY1 輸入
-
-E67 = E97 - 807.8 - A * E97 - B * N97
-N67 = N97 + 248.6 - A * N97 - B * E97 // 97->67
-
-outputData[i].tmXY2.X = E67 
-outputData[i].tmXY2.Y = N67 // 得到 tmXY2 
-
-objLLh2 = tmXY2LLh(E67, N67, outputData[i].tmXY2.h, 2)
-
-} // end if
-
-objXYZ2 = LLh2XYZ(objLLh2.LatY , objLLh2.LngX , objLLh2.h , 2)
+var objXYZ2 = LLh2XYZ(objLLh2.LatY , objLLh2.LngX , objLLh2.h , 2,d2)
 // XYZ2 用得到的 LLh2 重算
 
 // 輸出裝載資料
@@ -2871,7 +2911,7 @@ outputData[i].XYZ0.Z = 0 // 蓋掉 7para 轉得的 XYZ0
 
 } // for i
 
-restoreDatumTMsetG() ; // 備份的設定重回頁面
+// restoreDatumTMsetG() ; // 備份的設定重回頁面
 
 return outputData // i
 }// func. calcDataByNCKU_Sub(set)
@@ -2881,23 +2921,26 @@ return outputData // i
 function calcWGS84_67_97Sub(lat,lng){ // 供 GMap傳回座標運算用函式
 // WGS84 latlng 判別選用何種 datum tm 設定
 
-backupDatumTMsetG() ; // 備份 datum tm 設定到 global
+// backupDatumTMsetG() ; // 備份 datum tm 設定到 global
 var bakTPset = GtaipowerSet
 
-if(lng >= 120 && lng < 126 )
-{ callQuickSet("set84to67"); }
+var d1,d2,t1,t2;
+if(lng >= 120 && lng < 126 ) d1='WGS84',t1='TM6-123',d2='TWD67',t2='TM2-121';
+//{ callQuickSet("set84to67"); } 
+// WGS84-TM6-123-to-TWD67-TM2-121
 
-if(lng >= 114 && lng < 120 )
-{ callQuickSet("set84to67PH"); }
+if(lng >= 114 && lng < 120 ) d1='WGS84',t1='TM6-117',d2='TWD67',t2='TM2-119';
+//{ callQuickSet("set84to67PH"); }
+// WGS84-TM6-117-to-TWD67-TM2-119
 
-objtmXY1 = LLh2tmXY(lat, lng, 0, 1); // 用 set1 得 tm6=utm
+objtmXY1 = LLh2tmXY(lat, lng, 0, 1, d1,t1); // 用 set1 得 tm6=utm
  
-  objXYZ1 = LLh2XYZ(lat, lng, 0, 1); //將傳入的 latlng 進入7paraBW 計算
-  objXYZ0 = XYZ2XYZ(objXYZ1.X, objXYZ1.Y, objXYZ1.Z, 1);
+  objXYZ1 = LLh2XYZ(lat, lng, 0, 1, d1); //將傳入的 latlng 進入7paraBW 計算
+  objXYZ0 = XYZ2XYZ(objXYZ1.X, objXYZ1.Y, objXYZ1.Z, 1, d1);
   
-  objXYZ2 = XYZ2XYZ(objXYZ0.X, objXYZ0.Y, objXYZ0.Z, 2); 
-  objLLh2 = XYZ2LLh(objXYZ2.X, objXYZ2.Y, objXYZ2.Z, 2);
-  objtmXY2 = LLh2tmXY(objLLh2.LatY, objLLh2.LngX, objLLh2.h, 2);  
+  objXYZ2 = XYZ2XYZ(objXYZ0.X, objXYZ0.Y, objXYZ0.Z, 2, d2); 
+  objLLh2 = XYZ2LLh(objXYZ2.X, objXYZ2.Y, objXYZ2.Z, 2, d2);
+  objtmXY2 = LLh2tmXY(objLLh2.LatY, objLLh2.LngX, objLLh2.h, 2, d2,t2);  
 
 
 // 物件裝載
@@ -2907,39 +2950,41 @@ outputObj.LLh2 = objLLh2   // 67 LLh
 outputObj.tmXY2 = objtmXY2 // 67tmXY
 
 // 再來將目的 set2 設成 TWD97 TM2  
-var d2_TWD97 = (document.getElementById("TWD97.2").value).split(",")
-loadDatumData(d2_TWD97,2)
+// var d2_TWD97 = (document.getElementById("TWD97.2").value).split(",")
+// loadDatumData(d2_TWD97,2)
+d2='TWD97';
 
-if(lat >= 120 && lat < 126 )
-{
-var TMset2 = (document.getElementById("TM2.2").value).split(",")
-loadTMdata(TMset2,2)
-}
+if(lat >= 120 && lat < 126 ) t2='TM2-121';
+// {
+// var TMset2 = (document.getElementById("TM2.2").value).split(",")
+// loadTMdata(TMset2,2)
+// }
 
-if(lat >= 114 && lat < 120 )
-{
-var TMset2 = (document.getElementById("TM2.2.119").value).split(",")
-loadDatumData(TMset2,2)
-}
+
+if(lat >= 114 && lat < 120 ) t2='TM2-119';
+// {
+// var TMset2 = (document.getElementById("TM2.2.119").value).split(",")
+// loadDatumData(TMset2,2)
+// }
 
 
 // 再跑一次set2的運算 得97
-objXYZ2 = XYZ2XYZ(objXYZ0.X, objXYZ0.Y, objXYZ0.Z, 2); 
-objLLh2 = XYZ2LLh(objXYZ2.X, objXYZ2.Y, objXYZ2.Z, 2);
-objtmXY2 = LLh2tmXY(objLLh2.LatY, objLLh2.LngX, objLLh2.h, 2);    
+objXYZ2 = XYZ2XYZ(objXYZ0.X, objXYZ0.Y, objXYZ0.Z, 2, d2); 
+objLLh2 = XYZ2LLh(objXYZ2.X, objXYZ2.Y, objXYZ2.Z, 2, d2);
+objtmXY2 = LLh2tmXY(objLLh2.LatY, objLLh2.LngX, objLLh2.h, 2, d2,t2);    
 
 outputObj.LLh97 = objLLh2   // 97 LLh
 outputObj.tmXY97 = objtmXY2 // 97tmXY
 
 // 還原頁面設定
-restoreDatumTMsetG() ; 
+// restoreDatumTMsetG() ; 
 
 return outputObj
 }
 
 //-------------------------------------------------------------------------
 
-function backupDatumTMsetG(){
+function backupDatumTMsetG(){ // deprecated
 
 var gallset = Gallset ; // 取 global obj
 
@@ -2958,7 +3003,7 @@ gallset.tm2slt = document.getElementById("TMset2slt").selectedIndex
 
 //-------------------------------------------------------------------------
 
-function restoreDatumTMsetG(){
+function restoreDatumTMsetG(){ // deprecated
 
 var gallset = Gallset ; 
 
