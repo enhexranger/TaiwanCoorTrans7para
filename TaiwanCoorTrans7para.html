@@ -512,9 +512,8 @@ var GTPset2 = []
 GTPset2.push("Area,BottomX,BottomY,附註")
 GTPset2.push("Y,275000,2564000,澎湖南")
 GTPset2.push("X,275000,2614000,澎湖北")
-GTPset2 = GTPset2.join("\r\n")
 
-var GtaipowerSet = GTPset1.join("\r\n");
+var GtaipowerSet = GTPset1;
 
 var GAreaNames = getTPsetArea(); // 從 GtaipowerSet 中取出 area 的部份到 GArea
 
@@ -1360,7 +1359,7 @@ if( !objchkBox.checked ) // 如果xyset沒有打勾
 {objBtnCngTPSet.removeAttribute('disabled');} // 才允許變更設定
 
 //objMsgArea.innerText = GtaipowerSet ; 
-objMsgArea.value = GtaipowerSet // firefox
+objMsgArea.value = GtaipowerSet.join("\r\n") // firefox
     } // else objchkBox
 
 } // func. callTPSet()
@@ -1384,7 +1383,7 @@ function changeTPSet(){ // 變更設定
 var cngProtectAsk = confirm("SURELY Change Setting?")
 if(cngProtectAsk == true){
 var objMsgAreaStr = document.getElementById("settingView").value // 取 訊息欄
-GtaipowerSet = objMsgAreaStr
+GtaipowerSet = objMsgAreaStr.split("\r\n");
 
 GAreaNames = getTPsetArea(); // 更新 GArea
   } // if
@@ -1572,9 +1571,10 @@ return areaObj // 傳回物件
 
 //-------------------------------------------------------------------------
 
-function getInputObj(input) // 取得 輸入的查表 矩陣物件化
+function getInputObj(arr) // 取得 輸入的查表 矩陣物件化
 { // 共得 i筆，每筆有 j=4 個 的陣列
-input = input.split("\n") 
+var str = arr.join("\r\n");
+input = str.split("\n") 
 
 for(var i = 0 ; i < input.length ; i++)
 {
