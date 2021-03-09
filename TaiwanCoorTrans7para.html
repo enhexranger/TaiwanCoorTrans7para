@@ -1228,8 +1228,9 @@ return result
 function tp_tm2llh(x,y,h,chk,d1,d2,t1,t2){
 // 供 Taipower 表單轉換: 67xy轉 84llh ，分區四角點
 
+var objLLh1 = new Object();      
+
   if(chk == "LLh"){           // chk = LLh 時 xyh 轉浮點 LLh1
-  objLLh1 = new Object()      
   objLLh1.LatY = parseFloat(x)
   objLLh1.LngX = parseFloat(y)
   objLLh1.h = parseFloat(h)  
@@ -1237,10 +1238,10 @@ function tp_tm2llh(x,y,h,chk,d1,d2,t1,t2){
   else{objLLh1 = tmXY2LLh(x, y, h, 1, d1,t1);} //進來平面xyh 轉 LLh1
   // if chk
     
-  objXYZ1 = LLh2XYZ(objLLh1.LatY, objLLh1.LngX, 0, 1, d1);
-  objXYZ0 = XYZ2XYZ(objXYZ1.X, objXYZ1.Y, objXYZ1.Z, 1, d1);
-  objXYZ2 = XYZ2XYZ(objXYZ0.X, objXYZ0.Y, objXYZ0.Z, 2, d2); 
-  objLLh2 = XYZ2LLh(objXYZ2.X, objXYZ2.Y, objXYZ2.Z, 2, d2);
+  var objXYZ1 = LLh2XYZ(objLLh1.LatY, objLLh1.LngX, 0, 1, d1);
+  var objXYZ0 = XYZ2XYZ(objXYZ1.X, objXYZ1.Y, objXYZ1.Z, 1, d1);
+  var objXYZ2 = XYZ2XYZ(objXYZ0.X, objXYZ0.Y, objXYZ0.Z, 2, d2); 
+  var objLLh2 = XYZ2LLh(objXYZ2.X, objXYZ2.Y, objXYZ2.Z, 2, d2);
 
 var output = new Object()
 output.p1 = objLLh1
@@ -2527,17 +2528,6 @@ function tmXY2LLh(tmX,tmY,h,set,datum,tm){ //計算時不應取頁面參數
 var a = parseFloat(document.getElementById("sma."+set).value)  
 var divf = parseFloat(document.getElementById("divf."+set).value)
 
-var f = 1 / divf
-var e2 = 2*f - f*f
-var e_2 = f*(2-f) / POW((1-f),2) 
-var e4 = POW(e2,2) ; var e6 = POW(e2,3)
-var e1 = (1 - SQRT(1 - e2) ) / (1 + SQRT(1 - e2) )  
-
-var J1 = (3*(e1)/2 - 27*( POW(e1,3) )/32)
-var J2 = (21*(POW(e1,2))/16 - 55*(POW(e1,4))/32)
-var J3 = (151*(POW(e1,3))/96)
-var J4 = (1097*(POW(e1,4))/512) 
-
 var Lng0 = parseFloat(document.getElementById("Lng0."+set).value)
 var Lat0 = parseFloat(document.getElementById("Lat0."+set).value)
 var k0 = parseFloat(document.getElementById("k0."+set).value)
@@ -2556,6 +2546,17 @@ if(tm){
   FE = TM[tm][3];
   FN = TM[tm][4];
 }
+
+var f = 1 / divf
+var e2 = 2*f - f*f
+var e_2 = f*(2-f) / POW((1-f),2) 
+var e4 = POW(e2,2) ; var e6 = POW(e2,3)
+var e1 = (1 - SQRT(1 - e2) ) / (1 + SQRT(1 - e2) )  
+
+var J1 = (3*(e1)/2 - 27*( POW(e1,3) )/32)
+var J2 = (21*(POW(e1,2))/16 - 55*(POW(e1,4))/32)
+var J3 = (151*(POW(e1,3))/96)
+var J4 = (1097*(POW(e1,4))/512) 
 
 var rLng0 = deg2rad(Lng0)
 var rLat0 = deg2rad(Lat0)
@@ -2753,11 +2754,6 @@ var rLngX = deg2rad(LngX)
 
 var a = parseFloat(document.getElementById("sma."+set).value)
 var divf = parseFloat(document.getElementById("divf."+set).value) // 取 Datum 參數
-var f = 1 / divf
-var b = a*(1-f)
-var e2 = 2*f - f*f
-var e_2 = f*(2-f) / POW((1-f),2) ; var e_4 = POW(e_2,2) 
-var e4 = POW(e2,2) ; var e6 = POW(e2,3)
 
 var Lng0 = parseFloat(document.getElementById("Lng0."+set).value)
 var Lat0 = parseFloat(document.getElementById("Lat0."+set).value)
@@ -2777,6 +2773,12 @@ if(tm){
   FE = TM[tm][3];
   FN = TM[tm][4];
 }
+
+var f = 1 / divf
+var b = a*(1-f)
+var e2 = 2*f - f*f
+var e_2 = f*(2-f) / POW((1-f),2) ; var e_4 = POW(e_2,2) 
+var e4 = POW(e2,2) ; var e6 = POW(e2,3)
 
 var rLng0 = deg2rad(Lng0)
 var rLat0 = deg2rad(Lat0)
@@ -2933,14 +2935,14 @@ if(lng >= 114 && lng < 120 ) d1='WGS84',t1='TM6-117',d2='TWD67',t2='TM2-119';
 //{ callQuickSet("set84to67PH"); }
 // WGS84-TM6-117-to-TWD67-TM2-119
 
-objtmXY1 = LLh2tmXY(lat, lng, 0, 1, d1,t1); // 用 set1 得 tm6=utm
+var objtmXY1 = LLh2tmXY(lat, lng, 0, 1, d1,t1); // 用 set1 得 tm6=utm
  
-  objXYZ1 = LLh2XYZ(lat, lng, 0, 1, d1); //將傳入的 latlng 進入7paraBW 計算
-  objXYZ0 = XYZ2XYZ(objXYZ1.X, objXYZ1.Y, objXYZ1.Z, 1, d1);
+var objXYZ1 = LLh2XYZ(lat, lng, 0, 1, d1); //將傳入的 latlng 進入7paraBW 計算
+var objXYZ0 = XYZ2XYZ(objXYZ1.X, objXYZ1.Y, objXYZ1.Z, 1, d1);
   
-  objXYZ2 = XYZ2XYZ(objXYZ0.X, objXYZ0.Y, objXYZ0.Z, 2, d2); 
-  objLLh2 = XYZ2LLh(objXYZ2.X, objXYZ2.Y, objXYZ2.Z, 2, d2);
-  objtmXY2 = LLh2tmXY(objLLh2.LatY, objLLh2.LngX, objLLh2.h, 2, d2,t2);  
+var objXYZ2 = XYZ2XYZ(objXYZ0.X, objXYZ0.Y, objXYZ0.Z, 2, d2); 
+var objLLh2 = XYZ2LLh(objXYZ2.X, objXYZ2.Y, objXYZ2.Z, 2, d2);
+var objtmXY2 = LLh2tmXY(objLLh2.LatY, objLLh2.LngX, objLLh2.h, 2, d2,t2);  
 
 
 // 物件裝載
