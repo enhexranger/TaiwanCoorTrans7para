@@ -107,8 +107,7 @@ width: 98%;
 	<div>
 電力座標表:
 <select id="quickTPsetSlt" onchange="callTPsetSlt()">
-<option selected="" value="TPset0">-----------------</option>
-<option value="TPset1">台灣:中央經線:121</option>
+<option selected value="TPset1">台灣:中央經線:121</option>
 <option value="TPset2">澎湖:中央經線:119</option>
 </select>
 <input id="chkTPset" onclick="callTPSet(0)" type="button" value="查看" />
@@ -372,9 +371,9 @@ TMset: <input id="TMdeg.2" name="tmSetData" value="TMdeg" />
     var GoutputData = [];  // 輸出資料物件再存成全域型態
   //var GoutputDataPRN = [];
 
-    const IconStyle1 ="http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png";
-    const IconStyle2 ="http://maps.google.com/mapfiles/kml/shapes/info-i.png";
-    const IconStyle3 ="http://maps.google.com/mapfiles/kml/shapes/triangle.png"; 
+    const IconStyle1 ={'url':"http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png"};
+    const IconStyle2 ={'url':"http://maps.google.com/mapfiles/kml/shapes/info-i.png"};
+    const IconStyle3 ={'url':"http://maps.google.com/mapfiles/kml/shapes/triangle.png"}; 
 
 var PI = Math.PI
 
@@ -579,6 +578,7 @@ function(results, status){
         var box = results[0].geometry.viewport
             
         MapG.setCenter(pos);
+        IconStyle2['scaledSize']=new google.maps.Size(25,25);
         createMarker(MapG,pos,html,cmt,"",IconStyle2);      
         MapG.fitBounds(box);
         
@@ -644,6 +644,8 @@ function getEventMarkerInfo(event){
      var timecost = "(" + (t2 - t1) + "ms)" ; // 相減得時間差 ms
      mk1info += "<br/>"+"地址: " + GCaddress + timecost;
      
+     IconStyle2['scaledSize']=new google.maps.Size(25,25);
+        
      createMarker(MapG,GClatlng,GCinfo,GCcmt,"",IconStyle2); // geocode
      
      createMarker(MapG,latlng,mk1info,mk1cmt,"open",IconStyle2); //click
@@ -767,11 +769,11 @@ function createMarker(map,latlng,html,cmt,chk,style){
 
 var MarkersG = markersG ; var MarkersInfoG = markersInfoG ; // 取用 Global var.
 var MarkerNumObj = document.getElementById("markerNum")
-var MapG = mapG ;
+var marker, MapG = mapG ;
 
 if(markerCHK(latlng) == true){
 
-var marker = new google.maps.Marker(
+marker = new google.maps.Marker(
     { position: latlng,
       map: map,
       icon: style,
@@ -801,6 +803,7 @@ getMarkerPOShtml(marker) // 查詢此 marker 是第幾個，並更新 html
 
   } // if
 
+return marker;
 }// func. createMarker 
 
 //-------------------------------------------------------------------------
@@ -1165,7 +1168,8 @@ var lngCEN = (lng + lngUR)/2
 var cmt = pointObj84[i].cmt
 var latlngCEN = new google.maps.LatLng(latCEN,lngCEN)
  
- createMarker(MapG,latlngCEN,cmt,cmt,"",IconStyle3)
+  IconStyle3['scaledSize']=new google.maps.Size(25,25);        
+  createMarker(MapG,latlngCEN,cmt,cmt,"",IconStyle3)
 
    } // for i 計算所有 pointObj84
 
