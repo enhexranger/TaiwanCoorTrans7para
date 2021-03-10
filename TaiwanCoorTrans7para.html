@@ -551,8 +551,12 @@ var GTPsetStatus ="none"
 
       google.maps.event.addListener(mapG,'click',function(event){
        getEventMarkerInfo(event); } 
-      ); 
-          
+      );
+      
+      // let icon size smaller
+      IconStyle2['scaledSize']=new google.maps.Size(25,25);        
+      IconStyle3['scaledSize']=new google.maps.Size(25,25);        
+      
 } // func. start_map0
 
 //-------------------------------------------------------------------------
@@ -578,7 +582,6 @@ function(results, status){
         var box = results[0].geometry.viewport
             
         MapG.setCenter(pos);
-        IconStyle2['scaledSize']=new google.maps.Size(25,25);
         createMarker(MapG,pos,html,cmt,"",IconStyle2);      
         MapG.fitBounds(box);
         
@@ -643,8 +646,6 @@ function getEventMarkerInfo(event){
      var t2 = new Date(); // geocode後的時間
      var timecost = "(" + (t2 - t1) + "ms)" ; // 相減得時間差 ms
      mk1info += "<br/>"+"地址: " + GCaddress + timecost;
-     
-     IconStyle2['scaledSize']=new google.maps.Size(25,25);
         
      createMarker(MapG,GClatlng,GCinfo,GCcmt,"",IconStyle2); // geocode
      
@@ -656,7 +657,7 @@ function getEventMarkerInfo(event){
       ); // geocoder 本身會慢些處理，如有要繼續執行的程式，則寫在之後
     // end of process2
     }else{
-    createMarker(MapG,latlng,mk1info,mk1cmt,"open",IconStyle2); //click
+      createMarker(MapG,latlng,mk1info,mk1cmt,"open",IconStyle2); //click
     }
     
     // 其他檢查 10m 100m 800x500 是否要生成
@@ -1168,7 +1169,6 @@ var lngCEN = (lng + lngUR)/2
 var cmt = pointObj84[i].cmt
 var latlngCEN = new google.maps.LatLng(latCEN,lngCEN)
  
-  IconStyle3['scaledSize']=new google.maps.Size(25,25);        
   createMarker(MapG,latlngCEN,cmt,cmt,"",IconStyle3)
 
    } // for i 計算所有 pointObj84
