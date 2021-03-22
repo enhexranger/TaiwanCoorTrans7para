@@ -38,6 +38,22 @@ width: 98%;
 .css-table .hw {
   width: 108px;
 }
+
+/* info box */
+.infoa {
+    border: 8px solid transparent;
+    border-left: 0px;
+    cursor: help;
+  }
+
+  .info {
+    border: 1px solid black;
+    position: absolute;
+    color: deepskyblue;
+    background: black;
+    width: 80px;
+  }
+
 </style>
 <div class="main">
 <div class="video-container" id="map0" ></div>
@@ -68,12 +84,21 @@ width: 98%;
 <textarea class="ta" cols="60" name="inputData" rows="5"></textarea>
 <label>訊息欄:</label>
 <textarea class="ta" cols="60" id="settingView" name="settingView" rows="5"></textarea>
+<div>
 <input onclick="getInputDataAll()" type="button" value="取得輸入資料" />
 <input onclick="calcInputDataAll()" type="button" value="BW七參數" />
+<a class="infoa" onclick="infoDiv(this)">i<div class="info" style="display:none">此轉換取用下表參數</div></a>
+</div>
+<div>
 <input onclick="calcDataByNCKU(1)" type="button" value="成大67轉97" />
 <input onclick="calcDataByNCKU(2)" type="button" value="成大97轉67" />
-<input onclick="outputData2GMap()" type="button" value="轉換過的onGMap!" />
-<br />
+<input onclick="baseConvert()" type="button" value="基石轉換" />
+<a class="infoa" onclick="infoDiv(this)">i<div class="info" style="display:none">僅限台灣地區</div></a>
+</div>
+<div>
+<input onclick="llGMap(1)" type="button" value="LL1->GMap" />
+<input onclick="llGMap(2)" type="button" value="LL2->GMap" />
+</div>
 <div>
 <div>
 輸出項目
@@ -359,6 +384,14 @@ TMset: <input id="TMdeg.2" name="tmSetData" value="TMdeg" />
 </div>
 <script type="text/javascript">
 //<![CDATA[
+// html javascript
+function infoDiv(e) {
+    var div = e.children[0];
+    var a = 1, d = div.style.display;
+    if (d == 'none' && a) div.style.display = 'inline-block', a = 0;
+    if (d == 'inline-block' && a) div.style.display = 'none', a = 0;
+  }
+
 // Global var. overlayObj: map , marker , markerInfo, polyline , polygon
 
     var mapG;
@@ -367,6 +400,8 @@ TMset: <input id="TMdeg.2" name="tmSetData" value="TMdeg" />
     var markersInfoG = []; 
     var polylinesG = [];    
     var polygonsG = [];
+
+    // var geocodeRun; working
 
     var GoutputData = [];  // 輸出資料物件再存成全域型態
   //var GoutputDataPRN = [];
@@ -1800,6 +1835,28 @@ var tmSetDatas = document.forms[set].tmSetData
 
 //-------------------------------------------------------------------------
 
+function llGMap(n){
+  // global
+  var map = mapG, data = GoutputData;
+  
+  var bounds = new google.maps.LatLngBounds();
+
+  if(!data.length) return;
+
+data.map(d=>{
+    let LatY = d['LLh'+n].LatY;
+    let LngX = d['LLh'+n].LngX;
+    let LLh = round(LatY,'ll') +","+ round(LngX,'ll');
+    let html = LLh + "<br/>" + d.cmt;
+    let point = new google.maps.LatLng(LatY,LngX);
+    bounds.extend(point);
+    createMarker(map,point,html,"","",IconStyle1);
+  });
+
+map.fitBounds(bounds);
+
+}
+
 function outputData2GMap()
 {
 alert("Add PlaceMark!");
@@ -2328,8 +2385,8 @@ var i = 0 ; obj_outputData.value = tmp0 + "\r\n" ;
 var geocoder = new google.maps.Geocoder();
 
 if(Address1.checked){ 
-       
-var geocodeRun = self.setInterval(function(){
+// working       
+geocodeRun = window.setInterval(function(){
 
 var lat1 = round(outputData[i].LLh1.LatY,'ll')
 var lng1 = round(outputData[i].LLh1.LngX,'ll')
@@ -2347,8 +2404,8 @@ if(AddressCHK.checked == false )
 } // if 1
 
 if(Address2.checked){
-
-var geocodeRun = self.setInterval(function(){
+// working
+geocodeRun = window.setInterval(function(){
 
 var lat2 = round(outputData[i].LLh2.LatY,'ll')
 var lng2 = round(outputData[i].LLh2.LngX,'ll')
@@ -2365,6 +2422,7 @@ if(AddressCHK.checked == false )
 
 } // if 2
 
+// working    
 function geocodeFuncSub(results, status, tmp,i,obj_outputData){
 
  var response ;
@@ -2391,7 +2449,8 @@ function geocodeFuncSub(results, status, tmp,i,obj_outputData){
 else{
 obj_outputData.value = tmp0 + "\r\n" ;
 obj_outputData.value += tmp.join("\r\n") ;
-alert("Completed"); }
+// alert("Completed");
+ }
   // 輸出到結果窗格
 
 
