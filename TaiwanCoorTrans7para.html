@@ -122,9 +122,8 @@ width: 98%;
 </div>
 <div>
 <div>
-<input id="AddressCHK" name="outSet" onclick="convAddressAlert()" type="checkbox" />轉地址
-<input id="Address1" name="addressSlt" type="radio" />地址1
-<input id="Address2" name="addressSlt" type="radio" />地址2
+<input id="AddrCB1" name="addressSlt" type="checkbox" onclick="convAddressAlert()" />地址1
+<input id="AddrCB2" name="addressSlt" type="checkbox" onclick="convAddressAlert()" />地址2
 </div>
 </div>
 </div>
@@ -400,8 +399,6 @@ function infoDiv(e) {
     var markersInfoG = []; 
     var polylinesG = [];    
     var polygonsG = [];
-
-    // var geocodeRun; working
 
     var GoutputData = [];  // 輸出資料物件再存成全域型態
   //var GoutputDataPRN = [];
@@ -1838,7 +1835,10 @@ var tmSetDatas = document.forms[set].tmSetData
 function llGMap(n){
   // global
   var map = mapG, data = GoutputData;
-  
+  var d = data[0]['d'+n];
+  var t = data[0]['t'+n];
+  var dt = n+':'+d +'-'+t;
+
   var bounds = new google.maps.LatLngBounds();
 
   if(!data.length) return;
@@ -1847,7 +1847,11 @@ data.map(d=>{
     let LatY = d['LLh'+n].LatY;
     let LngX = d['LLh'+n].LngX;
     let LLh = round(LatY,'ll') +","+ round(LngX,'ll');
-    let html = LLh + "<br/>" + d.cmt;
+    let addr = d['Addr'+n];
+    let TPname1 =d['TPname1'];
+    let html = dt+'<br/>'+LLh + "<br/>" + d.cmt;
+    if(addr) html += "<br/>" + addr;
+    if(TPname1) html += "<br/> TPname1:" + TPname1;
     let point = new google.maps.LatLng(LatY,LngX);
     bounds.extend(point);
     createMarker(map,point,html,"","",IconStyle1);
@@ -2255,7 +2259,15 @@ outputDataPRN(outputData)
 
 GoutputData = outputData; // 輸出資料丟一份到 Global var. 
 // OK 的. 不需取了再用. 效能幾乎無差
-
+// outputData[0] 記載所用的 Datum & TM
+if(!outputData[0]['d1']) outputData[0]['d1'] = document.set1.whatDatumSet.value.split(',')[0];
+if(!outputData[0]['d2']) outputData[0]['d2'] = document.set2.whatDatumSet.value.split(',')[0];
+if(!outputData[0]['t1']) outputData[0]['t1'] = document.set1.whatTMset.value.split(',')[0];
+if(!outputData[0]['t2']) outputData[0]['t2'] = document.set2.whatTMset.value.split(',')[0];
+// feature working: 參數有更動了話一併記載
+/*
+  under construction.
+*/
 } // func. calcInputDataAll
 
 //-------------------------------------------------------------------------
@@ -2263,7 +2275,7 @@ GoutputData = outputData; // 輸出資料丟一份到 Global var.
 function outputDataPRN(outputData) 
 { // 檢查選取項目; 選擇性輸出;
 
-var tmp0 = [] ; var tmp = [] ; // 設定暫存二維文字矩陣
+var row0 = [] ; var rows = [] ; // 設定暫存二維文字矩陣
 
 var chkLLh1 = document.getElementById("LLh1")
 var chktmXY1 = document.getElementById("tmXY1")
@@ -2276,86 +2288,79 @@ var chktmXY2 = document.getElementById("tmXY2")
 var chkTPname1 = document.getElementById("TPName1")
 var chkTPname2 = document.getElementById("TPName2")
 
-var AddressCHK = document.getElementById("AddressCHK")
-var Address1 = document.getElementById("Address1")
-var Address2 = document.getElementById("Address2")
+var AddrCB1 = document.getElementById("AddrCB1")
+var AddrCB2 = document.getElementById("AddrCB2")
 
 //取得選取項目物件矩陣
 
 // 第0筆資料, 用來判別選取了哪些項目
-tmp0.push(0)
+row0.push(0)
 if(chkLLh1.checked )
-{tmp0.push("LLh1.LatY","LLh1.LngX","LLh1.h"); } // LLh1
+{row0.push("LLh1.LatY","LLh1.LngX","LLh1.h"); } // LLh1
 
 if(chktmXY1.checked )
-{tmp0.push("tmXY1.X","tmXY1.Y","tmXY1.h"); }    // TMxy1
+{row0.push("tmXY1.X","tmXY1.Y","tmXY1.h"); }    // TMxy1
 
 if(chkLLh2.checked )
-{tmp0.push("LLh2.LatY","LLh2.LngX","LLh2.h"); } // LLh2
+{row0.push("LLh2.LatY","LLh2.LngX","LLh2.h"); } // LLh2
 
 if(chktmXY2.checked )
-{tmp0.push("tmXY2.X","tmXY2.Y","tmXY2.h"); }   // TMxy2
+{row0.push("tmXY2.X","tmXY2.Y","tmXY2.h"); }   // TMxy2
 
 if(chkXYZ1.checked )
-{tmp0.push("XYZ1.X","XYZ1.Y","XYZ1.Z"); }   // XYZ1
+{row0.push("XYZ1.X","XYZ1.Y","XYZ1.Z"); }   // XYZ1
 
 if(chkXYZ0.checked )
-{tmp0.push("XYZ0.X","XYZ0.Y","XYZ0.Z"); }  // XYZ0
+{row0.push("XYZ0.X","XYZ0.Y","XYZ0.Z"); }  // XYZ0
 
 if(chkXYZ2.checked )
-{tmp0.push("XYZ2.X","XYZ2.Y","XYZ2.Z"); }  // XYZ2
+{row0.push("XYZ2.X","XYZ2.Y","XYZ2.Z"); }  // XYZ2
 
 if(chkTPname1.checked)
-{tmp0.push("TPName1"); }   // TPName1
+{row0.push("TPName1"); }   // TPName1
 
 if(chkTPname2.checked)
-{tmp0.push("TPName2"); }  // TPName2
+{row0.push("TPName2"); }  // TPName2
 
-{tmp0.push("comment")}    // comment
-
-if(AddressCHK.checked){
-if(Address1.checked){tmp0.push("Address1"); } // if 1
-if(Address2.checked){tmp0.push("Address2"); } // if 2
-} // if
-// 
+{row0.push("comment")}    // comment
 
 for(var i = 0 ; i < outputData.length ; i++) // 開始處理所有資料
-{ tmp[i] = [];
+{ rows[i] = [];
 
-tmp[i].push(i+1) ; // 第一個加入的是"資料編號"
+rows[i].push(i+1) ; // 第一個加入的是"資料編號"
 
 if(chkLLh1.checked )
-{tmp[i].push(round(outputData[i].LLh1.LatY,'ll'),
+{rows[i].push(round(outputData[i].LLh1.LatY,'ll'),
              round(outputData[i].LLh1.LngX,'ll'),
              round(outputData[i].LLh1.h,'xy') ); } // LLh1
 
 if(chktmXY1.checked )
-{tmp[i].push(round(outputData[i].tmXY1.X,'xy'),
+{rows[i].push(round(outputData[i].tmXY1.X,'xy'),
              round(outputData[i].tmXY1.Y,'xy'),
              round(outputData[i].tmXY1.h,'xy') ); } // TMxy1
 
 if(chkLLh2.checked )
-{tmp[i].push(round(outputData[i].LLh2.LatY,'ll'),
+{rows[i].push(round(outputData[i].LLh2.LatY,'ll'),
              round(outputData[i].LLh2.LngX,'ll'),
              round(outputData[i].LLh2.h,'xy') ); } // LLh2
 
 if(chktmXY2.checked )
-{tmp[i].push(round(outputData[i].tmXY2.X,'xy'),
+{rows[i].push(round(outputData[i].tmXY2.X,'xy'),
              round(outputData[i].tmXY2.Y,'xy'),
              round(outputData[i].tmXY2.h,'xy') ); } // TMxy2
 
 if(chkXYZ1.checked ) 
-{tmp[i].push(round(outputData[i].XYZ1.X,'xy'),
+{rows[i].push(round(outputData[i].XYZ1.X,'xy'),
   round(outputData[i].XYZ1.Y,'xy'),
   round(outputData[i].XYZ1.Z,'xy')); } // XYZ1
 
 if(chkXYZ0.checked ) 
-{tmp[i].push(round(outputData[i].XYZ0.X,'xy'),
+{rows[i].push(round(outputData[i].XYZ0.X,'xy'),
   round(outputData[i].XYZ0.Y,'xy'), 
   round(outputData[i].XYZ0.Z,'xy')); } // XYZ0
 
 if(chkXYZ2.checked ) 
-{tmp[i].push(round(outputData[i].XYZ2.X,'xy'),
+{rows[i].push(round(outputData[i].XYZ2.X,'xy'),
   round(outputData[i].XYZ2.Y,'xy'),
   round(outputData[i].XYZ2.Z,'xy')); } // XYZ2
 
@@ -2363,104 +2368,100 @@ if(chkTPname1.checked)
 {var x1 = round(outputData[i].tmXY1.X,'xy');
  var y1 = round(outputData[i].tmXY1.Y,'xy');
  var tpname1 = calc67getTPowerSub(x1,y1);
-tmp[i].push(tpname1); }                        // TPName1
+ outputData[i]['TPname1']=tpname1; // extend
+rows[i].push(tpname1); }                        // TPName1
 
 if(chkTPname2.checked)
 {var x2 = round(outputData[i].tmXY2.X,'xy');
  var y2 = round(outputData[i].tmXY2.Y,'xy');
  var tpname2 = calc67getTPowerSub(x2,y2);
-tmp[i].push(tpname2); }                       // TPName2
+ outputData[i]['TPname2']=tpname2; // extend
+rows[i].push(tpname2); }                       // TPName2
 
-tmp[i].push(outputData[i].cmt);   // comment
+rows[i].push(outputData[i].cmt);   // comment
 } // for i
 
-var obj_outputData = document.set0.settingView
-//obj_outputData.innerText = tmp
+if(AddrCB1.checked) row0.push("Addr1"); 
+if(AddrCB2.checked) row0.push("Addr2");
+// 
+var textArea = document.set0.settingView;
+//textArea.innerText = tmp
 //for firefox
-
+textArea.value = row0 + "\r\n" ;
 // 如果要轉出地址，開始特殊處理
-if( AddressCHK.checked )
-{
-var i = 0 ; obj_outputData.value = tmp0 + "\r\n" ;
+var AddressCHK = undefined;
+if(AddrCB1.checked || AddrCB2.checked) AddressCHK = true;
+if( AddressCHK ){
+
 var geocoder = new google.maps.Geocoder();
 
-if(Address1.checked){ 
-// working       
-geocodeRun = window.setInterval(function(){
+var x = 0, y = 0, latlngs=[], geocodeSub = ()=>{
 
-var lat1 = round(outputData[i].LLh1.LatY,'ll')
-var lng1 = round(outputData[i].LLh1.LngX,'ll')
-var latlng1 = new google.maps.LatLng(lat1,lng1)
+  var latlng = latlngs[y]['latlng'];
+  var name = latlngs[y]['name']; 
+  var row = rows[x];
+  var data = outputData[x];
 
-    geocoder.geocode({'latLng': latlng1},function(results, status)
-    { geocodeFuncSub(results, status, tmp,i,obj_outputData); 
-      i = i + 1 ; }//callback func.      
-                    ); // geocoder
-
-if(AddressCHK.checked == false )
-{window.clearInterval(geocodeRun); alert("Canceled"); }
-} ,1500); // var geocodeRun setInterval
-
-} // if 1
-
-if(Address2.checked){
-// working
-geocodeRun = window.setInterval(function(){
-
-var lat2 = round(outputData[i].LLh2.LatY,'ll')
-var lng2 = round(outputData[i].LLh2.LngX,'ll')
-var latlng2 = new google.maps.LatLng(lat2,lng2)
-
-    geocoder.geocode({'latLng': latlng2},function(results, status)
-    { geocodeFuncSub(results, status, tmp,i,obj_outputData);
-      i = i + 1 ; }// callback func.      
-                    ); // geocoder
-
-if(AddressCHK.checked == false )
-{window.clearInterval(geocodeRun); alert("Canceled"); }
-} ,1500); // var geocodeRun setInterval
-
-} // if 2
-
-// working    
-function geocodeFuncSub(results, status, tmp,i,obj_outputData){
-
- var response ;
-     if (status == google.maps.GeocoderStatus.OK) {
-        if (results[0]) { 
-        response = results 
-          } else {alert("No results found"); }
-     }else{ alert("Geocoder failed : " + status); }
-         
-     if(response){
-     var GCaddress = response[0].formatted_address ; // 0層最詳細
+  geocoder.geocode({'latLng': latlng},function(r, s){
+    var address = '';
+    if (s == google.maps.GeocoderStatus.OK) {
+       if (r) { 
+          address = r[0].formatted_address ; // 0層最詳細
+         } else{ 
+          address = 'no result';
+         }
+    }else{ 
+      address = "[geocode error]";
+      console.log('x='+x+',y='+y+',status='+s);
      }
-     else{ var GCaddress = "[geocode error]" }
-     
-     tmp[i].push(GCaddress)
-     obj_outputData.value += tmp[i]+ "\r\n" ; 
-     
-     if( i == tmp.length -1 ) // 最後一個.
-{window.clearInterval(geocodeRun); alert("Completed"); }
+     data[name]=address; // extend
+     row.push(address), y+=1; //console.log('ok:'+y);
+     if(y<latlngs.length){
+      geocodeSub();
+     }else{
+      textArea.value += row + "\r\n";
+      x+=1;
+      if(x < outputData.length) geocodeMain();
+     }
+      
+   });
 
-} // func. geocodeFuncSub
-    
-}// if chkaddress
+},
+geocodeMain = ()=>{
+  y=0, latlngs = [];
+  var d = outputData[x];
+
+  if(AddrCB1.checked){
+  var lat = round(d.LLh1.LatY,'ll');
+  var lng = round(d.LLh1.LngX,'ll');
+  var latlng = new google.maps.LatLng(lat,lng);
+  latlngs.push({'latlng':latlng,'name':'Addr1'});
+} 
+if(AddrCB2.checked){
+  var lat = round(d.LLh2.LatY,'ll');
+  var lng = round(d.LLh2.LngX,'ll');
+  var latlng = new google.maps.LatLng(lat,lng);
+  latlngs.push({'latlng':latlng,'name':'Addr2'});
+}
+  geocodeSub();
+};
+
+geocodeMain();
+} // if AddressCHK
 else{
-obj_outputData.value = tmp0 + "\r\n" ;
-obj_outputData.value += tmp.join("\r\n") ;
+textArea.value = row0 + "\r\n" ;
+textArea.value += rows.join("\r\n") ;
 // alert("Completed");
  }
-  // 輸出到結果窗格
-
-
+  
 } // func. outputDataPRN()
 
 //-------------------------------------------------------------------------
 function convAddressAlert(){
-var AddressCHK = document.getElementById("AddressCHK")
-if(AddressCHK.checked)
-{alert("地址轉換目前為 1.5 秒轉換一次, 請考量伺服器負荷避免過量! "); }
+var AddrCB1 = document.getElementById("AddrCB1");
+var AddrCB2 = document.getElementById("AddrCB2");
+if(AddrCB1.checked || AddrCB2.checked)
+{alert("免費API有用量限制"); }
 } // func. 
 
 
@@ -2581,6 +2582,12 @@ outputData[i].tmXY2 = objTMxy2[i]
 outputData[i].cmt = inputData[i][3]
                               
  } // for i
+
+// 0 存放強制的 Datum & TM 資訊
+if(d1) outputData[0]['d1']=d1;
+if(d2) outputData[0]['d2']=d2;
+if(t1) outputData[0]['t1']=t1;
+if(t2) outputData[0]['t2']=t2;
 
 return outputData; // i
 } // func. calcInputData7paraSub()
@@ -2942,11 +2949,11 @@ var func2 = function(){ // 97 -> 67
 };
 
 var objLLh2,llh2_tmxy2;
-var d1='', d2='', tm1='', tm2='';
+var d1='', d2='', t1='', t2='';
 if(set==1) llh2_tmxy2 = func1, d1 = 'TWD67', d2 = 'TWD97', t1='TM2-121', t2='TM2-121';
 if(set==2) llh2_tmxy2 = func2, d1 = 'TWD97', d2 = 'TWD67', t1='TM2-121', t2='TM2-121';
 
-var outputData = calcInputData7paraSub(inputData,d1,d2,tm1,tm2)  
+var outputData = calcInputData7paraSub(inputData,d1,d2,t1,t2)  
 // 計算輸入資料，只取 LLh1 tmXY1 ，其他的還是會經過 7para 轉換，多餘計算。
 
 for(var i = 0 ; i < outputData.length ; i++) // 計算所有資料
