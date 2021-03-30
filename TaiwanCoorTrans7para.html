@@ -1,4 +1,5 @@
 ﻿<style>
+  /* solve gmap street view icon problem on blogger */
 .video-container {
 position: relative;
 padding-bottom: 56.25%;
@@ -54,6 +55,15 @@ width: 98%;
     width: 80px;
   }
 
+/* input ON,Modified, Warning */
+input.ON, input.Modified {
+  background-color: yellow;
+}
+
+input.Warning {
+  background-color: red;
+}
+
 </style>
 <div class="main">
 <div class="video-container" id="map0" ></div>
@@ -80,24 +90,25 @@ width: 98%;
 <hr />
 
 <form name="set0">
-<label>輸入區: 主要支援 逗號(,)分隔 的資料格式，TAB(\t)會轉成逗號</label>
+<label>輸入區: 主要支援 逗號(,)分隔 的資料格式</label>
 <textarea class="ta" cols="60" name="inputData" rows="5"></textarea>
 <label>訊息欄:</label>
 <textarea class="ta" cols="60" id="settingView" name="settingView" rows="5"></textarea>
 <div>
 <input onclick="getInputDataAll()" type="button" value="取得輸入資料" />
 <input onclick="calcInputDataAll()" type="button" value="BW七參數" />
-<a class="infoa" onclick="infoDiv(this)">i<div class="info" style="display:none">此轉換取用下表參數</div></a>
+<a class="infoa" >i<div class="info" style="display:none">此轉換取用下表參數</div></a>
 </div>
 <div>
 <input onclick="calcDataByNCKU(1)" type="button" value="成大67轉97" />
 <input onclick="calcDataByNCKU(2)" type="button" value="成大97轉67" />
 <input onclick="baseConvert()" type="button" value="基石轉換" />
-<a class="infoa" onclick="infoDiv(this)">i<div class="info" style="display:none">僅限台灣地區</div></a>
+<a class="infoa" >i<div class="info" style="display:none">僅限台灣地區</div></a>
 </div>
 <div>
 <input onclick="llGMap(1)" type="button" value="LL1->GMap" />
 <input onclick="llGMap(2)" type="button" value="LL2->GMap" />
+<input onclick="GMap2Msg()" type="button" value="GMap->訊息欄" />
 </div>
 <div>
 <div>
@@ -106,15 +117,13 @@ width: 98%;
 <div>
 <input id="LLh1" name="outSet" type="checkbox" />LLh1
 <input id="tmXY1" name="outSet" type="checkbox" />tmXY1
+<input checked="" id="LLh2" name="outSet" type="checkbox" />LLh2
+<input checked="" id="tmXY2" name="outSet" type="checkbox" />tmXY2
 </div>
 <div>
 <input id="XYZ1" name="outSet" type="checkbox" />XYZ1
 <input id="XYZ0" name="outSet" type="checkbox" />XYZ0
 <input id="XYZ2" name="outSet" type="checkbox" />XYZ2
-</div>
-<div>
-<input checked="" id="LLh2" name="outSet" type="checkbox" />LLh2
-<input checked="" id="tmXY2" name="outSet" type="checkbox" />tmXY2
 </div>
 <div>
 <input id="TPName1" name="outSet" type="checkbox" />TPName1
@@ -135,11 +144,10 @@ width: 98%;
 <option value="TPset2">澎湖:中央經線:119</option>
 </select>
 <input id="chkTPset" onclick="callTPSet(0)" type="button" value="查看" />
-<input disabled="" id="CngTPSet" onclick="changeTPSet()" type="button" value="變更" />
-	</div>
+<input class="TBtn" id="xyTPset" type="button" value="xy表示" />
+<input id="TPSet2GMAP" onclick="getTPset2GMap()" type="button" value="GMap" />
+</div>
 <div>
-xy軸顯示設定<input id="xyset" onclick="disableCngTPSet()" type="checkbox" />
-<input id="TPSet2GMAP" onclick="getTPset2GMap()" type="button" value="分區GMap!" />
 </div>
 </div>
 <hr />
@@ -160,7 +168,7 @@ xy軸顯示設定<input id="xyset" onclick="disableCngTPSet()" type="checkbox" /
 <form name="set1">
 <b>Source Datum:</b>
 <select id="DatumSet1slt" name="whatDatumSet" onchange="getSltDatumData(1)">
-<option value="DatumName,a(m),1/f,b(m),dX(m),dY(m),dZ(m),Rx(asec),Ry(asec),Rz(asec),sf(ppm)">---</option>
+<option value="DatumName,sma(m),divf,smb(m),dX(m),dY(m),dZ(m),Rx(asec),Ry(asec),Rz(asec),sfppm(ppm)">---</option>
 <option id="TWD97.1" value="TWD97,6378137,298.257222101,6356752.3141,0,0,0,0,0,0,0">TWD97</option>
 <option id="TWD67.1" selected="" value="TWD67,6378160,298.25,6356774.7192,-730.16,-346.212,-472.186,-7.968,-3.5498,-0.4063,-18.2">TWD67
 </option>
@@ -170,7 +178,7 @@ xy軸顯示設定<input id="xyset" onclick="disableCngTPSet()" type="checkbox" /
 <br />
 DmName: <input id="DatumName.1" name="DatumSetData" value="DatumName" />
 <input onclick="addDatumOption(1)" type="button" value="add Datum" />
-<input onclick="chkInputDatumData(1)" type="button" value="chkDtm1" />
+<input style="display:none" onclick="chkInputDatumData(1)" type="button" value="chkDtm1" />
 <div class="css-table">
   <div class="tr">
     <div class="td">
@@ -201,7 +209,7 @@ DmName: <input id="DatumName.1" name="DatumSetData" value="DatumName" />
     </div>
   </div>
   <div class="tr">
-    <div style="display:none" id="Ru1">
+    <div style="display:none" id="Ru1" value="asec">
       <input value="asec"/>
       <a>asec</a><a>rad</a>
     </div>
@@ -266,14 +274,14 @@ TMset: <input id="TMdeg.1" name="tmSetData" value="TMdeg" />
 <form name="set2">
 <b>Target Datum :</b>
 <select id="DatumSet2slt" name="whatDatumSet" onchange="getSltDatumData(2)">
-<option value="DatumName,a(m),1/f,b(m),dX(m),dY(m),dZ(m),Rx(asec),Ry(asec),Rz(asec),sf(ppm)">---</option>
+<option value="DatumName,sma(m),divf,smb(m),dX(m),dY(m),dZ(m),Rx(asec),Ry(asec),Rz(asec),sfppm(ppm)">---</option>
 <option id="TWD97.2" value="TWD97,6378137,298.257222101,6356752.3141,0,0,0,0,0,0,0">TWD97</option>
 <option id="TWD67.2" value="TWD67,6378160,298.25,6356774.7192,-730.16,-346.212,-472.186,-7.968,-3.5498,-0.4063,-18.2">TWD67</option>
 <option id="WGS84.2" selected="" value="WGS84,6378137,298.257223563,6356752.31425,0,0,0,0,0,0,0">WGS84</option>
 </select><br />
 DmName: <input id="DatumName.2" name="DatumSetData" value="DatumName" />
 <input onclick="addDatumOption(2)" type="button" value="add Datum" />
-<input onclick="chkInputDatumData(2)" type="button" value="chkDtm2" />
+<input style="display:none" onclick="chkInputDatumData(2)" type="button" value="chkDtm2" />
 <br />
 <div class="css-table">
   <div class="tr">
@@ -305,7 +313,7 @@ DmName: <input id="DatumName.2" name="DatumSetData" value="DatumName" />
     </div>
   </div>
   <div class="tr">
-    <div style="display:none" id="Ru2">
+    <div style="display:none" id="Ru2" value="asec">
       <input value="asec"/>
       <a>asec</a><a>rad</a>
     </div>
@@ -384,12 +392,76 @@ TMset: <input id="TMdeg.2" name="tmSetData" value="TMdeg" />
 <script type="text/javascript">
 //<![CDATA[
 // html javascript
-function infoDiv(e) {
-    var div = e.children[0];
+(()=>{
+ // event bind
+  // infoDiv
+  var infoDiv = (e)=> {
+    let element = e.currentTarget;
+    var div = element.children[0];
     var a = 1, d = div.style.display;
     if (d == 'none' && a) div.style.display = 'inline-block', a = 0;
     if (d == 'inline-block' && a) div.style.display = 'none', a = 0;
-  }
+  };
+  var arr = document.getElementsByClassName('infoA');
+  for(var i=0;i<arr.length;i++) arr[i].addEventListener('click',infoDiv);
+  // Toggle Btn class
+  var arr = document.getElementsByClassName('TBtn');
+  for(var i=0;i<arr.length;i++) arr[i].addEventListener('click',(e)=>{
+    e.target.classList.toggle('ON');
+  });
+  // xyTPset Btn
+  let xytpset = document.getElementById('xyTPset');
+  xytpset.addEventListener('click',(e)=>{
+    callTPSet(0);
+  });
+  // datum & TM input onchange
+  // Datum:
+  var arr = document.getElementsByName('DatumSetData');
+  for(var i=0;i<arr.length;i++) arr[i].addEventListener('input',(e)=>{
+    let element = e.target;
+    let id = element.id.slice(0,-2);
+    let set = element.id.split('').pop();
+    let datums = document.getElementById('DatumSet'+set+'slt').value.split(',');
+    let datum0s = document.getElementById('DatumSet'+set+'slt')[0].value.split(',');
+    let i = datum0s.findIndex(x=>x.match(id));
+    let v = element.value;
+    let v0 = datums[i];
+    // rxyz asec & sfppm 
+    if(UnitConvert[id]){
+      var uid = UnitConvert[id][0];
+      var unit0 = UnitConvert[id][1];
+      var unitT = UnitConvert[id][2];
+      var func = UnitConvert[id][3];
+      var pm = UnitConvert[id][4];
+      var pr = UnitConvert[id][5];
+      // detect unit & convert
+      var unit = document.getElementById(uid+set).getAttribute('value');
+      if(unit0 == unit) v = round(func(v,unitT)*pm,pr);
+    }
+    element.classList.remove('Modified','Warning');
+    var v0f = parseFloat(v0), vf = parseFloat(v); 
+    if(v0f != vf) element.classList.add('Modified');
+    if(!isNaN(v0) && isNaN(v)) element.classList.add('Warning');
+    if(v0 == v) element.classList.remove('Modified','Warning');
+  });
+  // TM:
+  var arr = document.getElementsByName('tmSetData');
+  for(var i=0;i<arr.length;i++) arr[i].addEventListener('input',(e)=>{
+    let element = e.target;
+    let id = element.id.slice(0,-2);
+    let set = element.id.split('').pop();
+    let TMs = document.getElementById('TMset'+set+'slt').value.split(',');
+    let TM0s = document.getElementById('TMset'+set+'slt')[0].value.split(',');
+    let i = TM0s.findIndex(x=>x.match(id));
+    let v = element.value;
+    let v0 = TMs[i];
+    element.classList.remove('Modified','Warning');
+    var v0f = parseFloat(v0), vf = parseFloat(v); 
+    if(v0f != vf) element.classList.add('Modified');
+    if(!isNaN(v0) && isNaN(v)) element.classList.add('Warning');
+    if(v0 == v) element.classList.remove('Modified','Warning');
+  });
+})();
 
 // Global var. overlayObj: map , marker , markerInfo, polyline , polygon
 
@@ -451,6 +523,7 @@ function asec_rad(n){
   var unit2 = arr[2].text;
   unit = unit1, unit1=unit2, unit2=unit;
   unit = unit1;
+  div.setAttribute('value', unit );
   arr[0].setAttribute('value', unit );
   arr[1].text = unit1;
   arr[2].text = unit2;
@@ -468,7 +541,11 @@ function asec_rad(n){
   for(var i=0; i < arr.length; i++){
     var input = arr[i];
     var v = parseFloat(input.value);
-    input.value = round(func(v)*a,b);
+    v = round(func(v)*a,b);
+    if(isNaN(v)) v = input.value.slice(0,3)+unit+')';
+    input.value = v;
+    // trigger event input
+    input.dispatchEvent(new Event('input'));
   }
 }
 //
@@ -494,11 +571,15 @@ function sf_s(n){
     s = sf_ppm(s,unit);
     s = round(s,8);
   }
+  if(isNaN(s)) s = input.value.slice(0,6)+unit+')';
   input.value = s;
+  // trigger event input
+  input.dispatchEvent(new Event('input'));
 }
 
 // Datum setting : a(m),1/f,b(m),dX(m),dY(m),dZ(m),Rx(asec),Ry(asec),Rz(asec),sf(ppm) 
 const DATUM = {
+'Datum':['sma','divf','smb','dX','dY','dZ','Rx','Ry','Rz','sfppm'],  
 'TWD67':[6378160,298.25,6356774.7192,-730.16,-346.212,-472.186,-7.968,-3.5498,-0.4063,-18.2],
 'TWD97':[6378137,298.257222101,6356752.3141,0,0,0,0,0,0,0],
 'WGS84':[6378137,298.257223563,6356752.31425,0,0,0,0,0,0,0]
@@ -506,11 +587,20 @@ const DATUM = {
 
 // TM setting : Lng0(deg),Lat0(deg),k0,FE(m),FN(m)
 const TM = {
+'TM':['Lng0','Lat0','k0','FE','FN'],  
 'TM2-121':[121,0,0.9999,250000,0],
 'TM3-121':[121,0,1,350000,0],
 'TM6-123':[123,0,0.9996,500000,0],
 'TM2-119':[119,0,0.9999,250000,0],
 'TM6-117':[117,0,0.9996,500000,0]
+};
+
+// unit : 取得單位,需要被轉換的單位,目標單位,所需的func,額外的參數,四捨五入
+const UnitConvert = {
+'Rx':['Ru', 'rad','deg', rad2deg, 3600, 4],
+'Ry':['Ru', 'rad','deg', rad2deg, 3600, 4],
+'Rz':['Ru', 'rad','deg', rad2deg, 3600, 4],
+'sfppm':['sfu', 'unitless','ppm', sf_ppm, 1, 2],
 };
 
 //---TaipowerGlobal var.---
@@ -1376,28 +1466,23 @@ function getXY_TPn11(tpname){
 }
 
 function callTPSet(set){
-// 取出內建查表傳入訊息區，如果 xyset 勾選了，將查表物件傳入 xysetCreate() 處理
-var objMsgArea = document.getElementById("settingView") // 取 訊息欄
-var objchkBox = document.getElementById("xyset")  // 取 chkbox
-var objBtnCngTPSet = document.getElementById("CngTPSet")
+// 取出內建查表傳入訊息區，如果 xy表示:ON，將查表物件傳入 xysetCreate() 處理
+var objMsgArea = document.getElementById("settingView"); // 取 訊息欄
+var xyTPset = document.getElementById("xyTPset");  
+var qTPsetSlt = document.getElementById("quickTPsetSlt").value;
 
-if(set == 0){}
+if(set == 0) set = qTPsetSlt.split('').pop();
 if(set == 1){GtaipowerSet = GTPset1; }
 if(set == 2){GtaipowerSet = GTPset2; }
 
-if(objchkBox.checked){ // 如果xyset打勾
-tmp = xysetCreate( getInputObj(GtaipowerSet)); 
-//另將查表'物件'送去做處理
-//objMsgArea.innerText = tmp
-objMsgArea.value = tmp ; GTPsetStatus = "xy" ; } // 設定 查表狀態 為 xy
-else{
-GTPsetStatus = "list"; // 沒有xyset的送出 查表狀態一定是 list 
-if( !objchkBox.checked ) // 如果xyset沒有打勾
-{objBtnCngTPSet.removeAttribute('disabled');} // 才允許變更設定
-
-//objMsgArea.innerText = GtaipowerSet ; 
-objMsgArea.value = GtaipowerSet.join("\r\n") // firefox
-    } // else objchkBox
+var tmp = '', GTPsetStatus = "list";
+tmp = GtaipowerSet.join("\r\n");
+if(xyTPset.classList.contains('ON')){
+  tmp = xysetCreate( getInputObj(GtaipowerSet)); 
+  GTPsetStatus = "xy";
+}
+ 
+objMsgArea.value = tmp;
 
 } // func. callTPSet()
 
@@ -1519,19 +1604,6 @@ xyArea = xyArea.join("\r\n") // 矩陣斷行以供顯示
 return xyArea // i
 } // func. xysetCreate
 
-//-------------------------------------------------------------------------
-
-function disableCngTPSet() // [變更設定]鈕 取消功能
-{
-var objXYsetChk = document.getElementById("xyset")
-var objBtnCngTPSet = document.getElementById("CngTPSet")
-
-if(objXYsetChk.checked) // 如果 xyset 核取
-{objBtnCngTPSet.setAttribute('disabled','enbled')} //就一定變更設定不准
-else if(!objXYsetChk.checked && GTPsetStatus == "list")
-{objBtnCngTPSet.removeAttribute('disabled')} // 反之 但查表狀態 = list，允許變更
-
-} // diaableCngTPSet
 //-------------------------------------------------------------------------
 
 function calc67getTPowerSub(x,y){
@@ -1767,7 +1839,12 @@ function getSltDatumData(num){ // HTML
   var datumSetDatas = document.forms[num].DatumSetData
   for(var  i=0 ; i < datumSetDatas.length ; i++)
   {datumSetDatas[i].value = paras[i]; }
-  // 取 input datumSetData , 把 whatDatumSet 值集合0~10依序填入 
+  // 取 input datumSetData , 把 whatDatumSet 值集合0~10依序填入
+  // 重新取值填入後取消標示
+  for(var  i=0 ; i < datumSetDatas.length ; i++){
+    var element = datumSetDatas[i];
+    element.classList.remove('Modified','Warning');
+  }
 } // func.getSltDatumData()
 
 //-------------------------------------------------------------------------
@@ -1781,6 +1858,11 @@ function getSltTMdata(num){ // HTML
     for(var i = 0 ; i < tmSetDatas.length ; i++) // i = 0~5 
     {tmSetDatas[i].value = paras[i];} 
     //取input tmSetData 同名集合 , 依序給值，input 物件值就會更新顯示
+    // 重新取值填入後取消標示
+    for(var  i=0 ; i < tmSetDatas.length ; i++){
+    var element = tmSetDatas[i];
+    element.classList.remove('Modified','Warning');
+  }
 } // func. getSltTMdata()
 
 //-------------------------------------------------------------------------
