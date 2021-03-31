@@ -472,6 +472,33 @@ TMset: <input id="TMdeg.2" name="tmSetData" value="TMdeg" />
     var polylinesG = [];    
     var polygonsG = [];
 
+    const PolyLineOptions = {
+      strokeColor: "#00FF00",
+      strokeOpacity: 0.5,
+      strokeWeight: 3
+    };
+
+    const PolygonOptions = {
+     strokeColor: "#00FF00",
+     strokeOpacity: 0.3,
+     strokeWeight: 3,
+     fillColor: "#00FF00",
+     fillOpacity: 0.1
+    };
+
+    const MapItemsTP = {
+      'TPset1':{
+        'markers':[],
+        'polylines':[],
+        'polygons':[]
+      },
+      'TPset2':{
+        'markers':[],
+        'polylines':[],
+        'polygons':[]
+      }
+    };
+    
     var GoutputData = [];  // 輸出資料物件再存成全域型態
   //var GoutputDataPRN = [];
 
@@ -638,6 +665,7 @@ var GtaipowerSet = GTPset1;
 
 var GAreaNames = getTPsetArea(); // 從 GtaipowerSet 中取出 area 的部份到 GArea
 
+// deprecated
 var Gallset = new Object();
 Gallset.d1 = []
 Gallset.d2 = []
@@ -760,7 +788,7 @@ function getEventMarkerInfo(event){
      var GClat = GClatlng.lat() ;
      var GClng = GClatlng.lng() ;
      
-     var GCinfo = GClat + GClng + "<br/>" + "抓取的地址位置置" ;
+     var GCinfo = GClat+","+GClng + "<br/>" + "抓取的地址位置" ;
      var GCcmt = GClat+","+GClng ;
      
      mk1cmt += "\n"+GCaddress ;
@@ -769,7 +797,7 @@ function getEventMarkerInfo(event){
      var timecost = "(" + (t2 - t1) + "ms)" ; // 相減得時間差 ms
      mk1info += "<br/>"+"地址: " + GCaddress + timecost;
         
-     createMarker(MapG,GClatlng,GCinfo,GCcmt,"",IconStyle2); // geocode
+     createMarker(MapG,GClatlng,GCinfo,GCcmt,"",IconStyle3); // geocode
      
      createMarker(MapG,latlng,mk1info,mk1cmt,"open",IconStyle2); //click
      
@@ -841,21 +869,21 @@ function get_84_97_67_TPName_info(latlng){
 
 //-------------------------------------------------------------------------
 
-function createPolyline(latlngObj){
+function createPolyline(latlngObj,map,polylines){
+
+  var MapG = mapG, PolylinesG = polylinesG;
+  if(map) MapG = map;
+  if(polylines) PolylinesG = polylines;
 
 if(polylineCHK(latlngObj) == true){
 
  var cline = new google.maps.Polyline({ // click -> geocode
-        path: latlngObj,
-        strokeColor: "#00FF00",
-        strokeOpacity: 0.5,
-        strokeWeight: 3  });
+        path: latlngObj
+      });
+    cline.setOptions(PolyLineOptions);
      
-     var MapG = mapG ;   
      cline.setMap(MapG) ; 
-     //alert(latlngObj[0] == cline.getPath().getAt(0))
      
-     var PolylinesG = polylinesG
      PolylinesG.push(cline) ; // Global 管理
 
  } // if
@@ -888,59 +916,59 @@ return result
 
 //-------------------------------------------------------------------------
 //map , 座標, info內容, title顯示, 檢查項 open = 產生點就開啟 info窗
-function createMarker(map,latlng,html,cmt,chk,style){
+function createMarker(map,latlng,html,cmt,chk,style,markers){
 
-var MarkersG = markersG ; var MarkersInfoG = markersInfoG ; // 取用 Global var.
-var MarkerNumObj = document.getElementById("markerNum")
-var marker, MapG = mapG ;
+  var MarkersG = markersG;
+  if(markers) MarkersG = markers;
 
-if(markerCHK(latlng) == true){
+  var MarkerNumObj = document.getElementById("markerNum")
 
-marker = new google.maps.Marker(
+if(markerCHK(latlng,MarkersG) == true){
+// marker
+var marker = new google.maps.Marker(
     { position: latlng,
       map: map,
       icon: style,
       title: cmt } ); //座標,地圖,title:移上點位時顯示黃底小框之資訊
-
-   // marker 事件：
+// info
+var markerInfo = new google.maps.InfoWindow(
+    {content: html} );
+// event
     google.maps.event.addListener(marker, 'click', function()
      { closeAllMarkerInfo();              // 關閉所有 info
-       marker_info.open(MapG,marker);     // 開啟click marker 的 info
+       markerInfo.open(map,marker);     // 開啟click marker 的 info
        getMarkerPOShtml(marker);        // 顯示這是第幾個 marker 
      } );
-
-MarkersG.push(marker); //送至全域 做管理    
-    
-    var marker_info = new google.maps.InfoWindow(
-    {content: html} );
-
+// manage
+MarkersG.push({
+'marker':marker,
+'info':markerInfo
+});    
+    // info open
     if(chk == "open"){
     closeAllMarkerInfo() // 關閉所有 info   
-    marker_info.open(MapG,marker); // 剛產生的 marker開info窗
+    markerInfo.open(map,marker); // 剛產生的 marker開info窗
     } // if chk  
 
-MarkersInfoG.push(marker_info); // Global markersInfo
-
-MarkerNumObj.value = MarkersG.length // marker總數顯示更新
+MarkerNumObj.value = markersG.length // marker總數顯示更新
 getMarkerPOShtml(marker) // 查詢此 marker 是第幾個，並更新 html
 
-  } // if
+  } // if markerCHK.
 
 return marker;
 }// func. createMarker 
 
 //-------------------------------------------------------------------------
 // 檢查重複的 marker(by latlng)
-function markerCHK(latlng){
+function markerCHK(latlng,markers){
 
 var result = true
-var MarkersG = markersG // 避免一直重複使用全域變數，取過來再用
 
-if( MarkersG.length > 0 ){
+if( markers.length > 0 ){
 
 var latlngStr = latlng.toString()
-for(var i = 0 , num=MarkersG.length ; i < num ; i++){
-if(MarkersG[i].getPosition().toString() == latlngStr )
+for(var i = 0 , num=markers.length ; i < num ; i++){
+if(markers[i]['marker'].getPosition().toString() == latlngStr )
 { addSettingView("find the same marker at "+i );
   result = false ; }
                     } // for
@@ -957,7 +985,7 @@ var MarkersG = markersG
 var MarkerPOS = document.getElementById("markerPOS")
 
 for(var i=0 , num=MarkersG.length ; i < num ; i++){
-if(marker == MarkersG[i])
+if(marker == MarkersG[i]['marker'])
 { MarkerPOS.value = parseInt(i)+1 }
   } // for i 
 } // func. getMarkerPOShtml
@@ -966,11 +994,11 @@ if(marker == MarkersG[i])
 // 關閉所有 marker info 窗
 function closeAllMarkerInfo(){
 
-var MarkersInfoG = markersInfoG ;
+var MarkersG = markersG ;
 
-if(MarkersInfoG.length > 0) 
-       {for(var i = 0 , num = MarkersInfoG.length ; i < num ; i++)
-       {MarkersInfoG[i].close() } }; 
+if(MarkersG.length > 0) 
+       {for(var i = 0 , num = MarkersG.length ; i < num ; i++)
+       {MarkersG[i]['info'].close() } }; 
 } // func. closeAllMarkerInfo
 
 //-------------------------------------------------------------------------
@@ -981,9 +1009,7 @@ var markerNumobj = document.getElementById("markerNum") // 取POS,Num 物件
 var mPOS = parseInt(markerPOSobj.value) // 取值
 
 var MarkersG = markersG // 取全域變數
-var MarkersInfoG = markersInfoG
 
-//if(markerPOS > 0 && markerPOS <= markersG.length ){
 // 所有功能必須在 至少有1個 marker 且不大於 marker總數
 if(set == 'prev' && mPOS > 1){
 // prev 至少 marker 要 2 個以上
@@ -998,9 +1024,8 @@ openMarkerInfoByPOS()
 if(set == 'del' && mPOS > 0 && MarkersG.length > 0){
 // 至少要有一個 marker 才能刪除
 var i = parseInt(markerPOSobj.value) -1
-MarkersInfoG[i].close()  // info 關閉
-MarkersG[i].setMap(null) // marker set null
-MarkersInfoG.splice(i,1) // 矩陣也 remove
+MarkersG[i]['info'].close()  // info 關閉
+MarkersG[i]['marker'].setMap(null) // marker set null
 MarkersG.splice(i,1)
 if(i == 0 && MarkersG.length > 0){i = 1}
 markerPOSobj.value = i   // 更新目前位置
@@ -1017,13 +1042,13 @@ openMarkerInfoByPOS();
 
 function openMarkerInfoByPOS(){
 
-var MarkersG = markersG ; var MarkersInfoG = markersInfoG
+var MarkersG = markersG ; //var MarkersInfoG = markersInfoG
 var MapG = mapG
 
 var i = parseInt(document.getElementById("markerPOS").value)
 var k = MarkersG.length
 if(i > 0 && i <= k ){closeAllMarkerInfo(); // 關閉所有info窗
-MarkersInfoG[i-1].open(MapG,MarkersG[i-1]); }
+MarkersG[i-1]['info'].open(MapG,MarkersG[i-1]['marker']); }
 }
 
 //-------------------------------------------------------------------------
@@ -1031,23 +1056,19 @@ MarkersInfoG[i-1].open(MapG,MarkersG[i-1]); }
 function clearAlloverlays(){
 
 var MarkersG = markersG
-var MarkersInfoG = markersInfoG
 var PolylinesG = polylinesG
 var PolygonsG = polygonsG
-
-if(markersG){
+// marker
 for(var i=0 , num=MarkersG.length ; i < num ; i++)
-{MarkersG[i].setMap(null); }
-MarkersG.length = 0 ; 
-} // if markersG
+{MarkersG[i]['marker'].setMap(null); }
 
 document.getElementById("markerNum").value = 0
 document.getElementById("markerPOS").value = 0
+// info
+for(var i=0 , num=MarkersG.length ; i < num ; i++)
+{MarkersG[i]['info'].close(); }
 
-if(MarkersInfoG){
-for(var i=0 , num=MarkersInfoG.length ; i < num ; i++)
-{MarkersInfoG[i].close(); }
-MarkersInfoG.length = 0 ; } // if markersInfoG
+MarkersG.length = 0 ; 
 
 if(PolylinesG){
 for(var i=0 , num=PolylinesG.length ; i < num ; i++)
@@ -1150,14 +1171,15 @@ function getTPset2GMap(){
 // PengHu: TWD67-TM2-119 轉 WGS84-TM2-119
 // 偵測目前 Tipower 表單(台灣 OR 澎湖)
 var TPsetSlt = document.getElementById("quickTPsetSlt").value
+// GMap 按鈕
+var btn = document.getElementById("TPSet2GMAP");
 
 var d1,d2,t1,t2;
 if(TPsetSlt == "TPset1" ) d1 = 'TWD67', t1='TM2-121', d2 = 'WGS84', t2 = 'TM2-121';
-
-
 if(TPsetSlt == "TPset2" ) d1 = 'TWD67', t1='TM2-119', d2 = 'WGS84', t2 = 'TM2-119';
 
-//固定會去掉 矩陣第一列，每列第一個，超過 5 個都去除
+var add = ()=>{
+  //固定會去掉 矩陣第一列，每列第一個，超過 5 個都去除
 inputObj =  getInputObj(GtaipowerSet)
 inputObj.shift() // 砍掉第一列註解行
 
@@ -1262,6 +1284,8 @@ pointObj84[i].ULh = fix.p2.h
 
 // 建立面積物件 + 計算中央點物件
 alert("Add TaiwanPowerArea! "); var MapG = mapG
+var polygons = MapItemsTP[TPsetSlt]['polygons'];
+var markers = MapItemsTP[TPsetSlt]['markers'];
 
 for(var i = 0 , num=pointObj84.length ; i < num ; i++ ){
 
@@ -1283,7 +1307,8 @@ var latlngUR = new google.maps.LatLng(latUR,lngUR)
 var latlngUL = new google.maps.LatLng(latUL,lngUL)
 
  // 建立 Polygon 
-createPolygon([latlng,latlngDR,latlngUR,latlngUL,latlng])
+ // 存於指定容器
+ createPolygon([latlng,latlngDR,latlngUR,latlngUL,latlng],MapG,polygons)
 
 // 建立中央點
 var latCEN = (lat + latUR)/2
@@ -1291,34 +1316,58 @@ var lngCEN = (lng + lngUR)/2
 var cmt = pointObj84[i].cmt
 var latlngCEN = new google.maps.LatLng(latCEN,lngCEN)
  
-  createMarker(MapG,latlngCEN,cmt,cmt,"",IconStyle3)
+// 存於指定容器
+  createMarker(MapG,latlngCEN,cmt,cmt,"",IconStyle3,markers)
 
    } // for i 計算所有 pointObj84
+
+
+}; // add
+
+var remove = ()=>{
+  var markers = MapItemsTP[TPsetSlt]['markers'];
+  var polygons = MapItemsTP[TPsetSlt]['polygons'];
+  for(var i=0,num=markers.length;i<num;i++){
+    markers[i]['marker'].setMap(null);
+    markers[i]['info'].setMap(null);
+  } 
+  for(var i=0,num=polygons.length;i<num;i++){
+    polygons[i].setMap(null);
+  }
+  markers.length = 0;
+  polygons.length = 0;
+};
+// detect TParea 
+if(!MapItemsTP[TPsetSlt]['markers'].length){
+  add();
+  btn.classList.add('ON');
+}else{
+  remove();
+  btn.classList.remove('ON');
+}
 
 } // func. getTPset2GMap 
 
 //----------------------------------------------------------------
 
-function createPolygon(latlngObj){
+function createPolygon(latlngObj,map,polygons){
+
+var MapG = mapG, PolygonsG = polygonsG;
+if(map) MapG = map;
+if(polygons) PolygonsG = polygons;
+
 if( polygonCHK(latlngObj) == true ){
 
    var polygon = new google.maps.Polygon(
-   {paths: latlngObj,
-    strokeColor: "#00FF00",
-    strokeOpacity: 0.3,
-    strokeWeight: 3,
-    fillColor: "#00FF00",
-    fillOpacity: 0.1
-    } );       // API v3 
-        
-        var MapG = mapG ;
+   {paths: latlngObj} );       // API v3 
+  polygon.setOptions(PolygonOptions); 
+
 polygon.setMap(MapG);
 
 google.maps.event.addListener( polygon,"click", 
 function(event){getEventMarkerInfo(event); } 
       ) ; // polygon 在 overlay 上被點到也需要事件處理
 
-var PolygonsG = polygonsG
 PolygonsG.push(polygon); // Global polygons 管理
 
     } // if
@@ -1483,6 +1532,13 @@ if(xyTPset.classList.contains('ON')){
 }
  
 objMsgArea.value = tmp;
+// detect GMap ON
+var btn = document.getElementById("TPSet2GMAP");
+if(!MapItemsTP[qTPsetSlt]['markers'].length){
+  btn.classList.remove('ON');
+}else{
+  btn.classList.add('ON');
+  }
 
 } // func. callTPSet()
 
@@ -1917,13 +1973,14 @@ var tmSetDatas = document.forms[set].tmSetData
 function llGMap(n){
   // global
   var map = mapG, data = GoutputData;
+  
+  if(!data[0]){ alert('資料還沒轉換'); return;}
+
   var d = data[0]['d'+n];
   var t = data[0]['t'+n];
   var dt = n+':'+d +'-'+t;
 
   var bounds = new google.maps.LatLngBounds();
-
-  if(!data.length) return;
 
 data.map(d=>{
     let LatY = d['LLh'+n].LatY;
@@ -1943,6 +2000,7 @@ map.fitBounds(bounds);
 
 }
 
+// deprecated
 function outputData2GMap()
 {
 alert("Add PlaceMark!");
