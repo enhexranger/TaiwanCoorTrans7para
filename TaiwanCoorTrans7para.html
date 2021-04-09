@@ -468,9 +468,48 @@ TMset: <input id="TMdeg.2" name="tmSetData" value="TMdeg" />
     var mapG;
     
     var markersG = [];
-    var markersInfoG = []; 
-    var polylinesG = [];    
+    let polylinesG = new Map(); 
     var polygonsG = [];
+
+    const MarkerItemCreate = function(marker,info){
+      this.marker = marker;
+      this.info = info;
+      this.polylineItems = [];
+      this.clearPolylines = ()=>{
+        var plis = this.polylineItems;
+        var PolylinesG = polylinesG;
+        for(var i=0,n=plis.length;i<n;i++){
+          var key = plis[i].getKey();
+          var pli = PolylinesG.get(key);
+          var dupes = pli.dupes;
+          if( dupes > 1 ){
+            pli.minus();
+            PolylinesG.set(key,pli);
+          }else{
+            pli.polyline.setMap(null);
+            PolylinesG.delete(key);  
+          }    
+        } 
+        plis.length = 0;
+      };
+    };
+
+    const PolyLineItemCreate = function(polyline){
+      this.polyline = polyline;
+      this.dupes = 1;
+      this.getKey = ()=>{
+        var p = this.polyline;
+        var s1 = p.getPath().getAt(0).toString();
+        var s2 = p.getPath().getAt(1).toString();
+        return s1+s2;
+      }; 
+      this.plus = ()=>{
+        this.dupes+=1;
+      };
+      this.minus = ()=>{
+        this.dupes-=1;
+      };
+    };
 
     const PolyLineOptions = {
       strokeColor: "#00FF00",
@@ -732,7 +771,7 @@ function(results, status){
         var box = results[0].geometry.viewport
             
         MapG.setCenter(pos);
-        createMarker(MapG,pos,html,cmt,"",IconStyle2);      
+        createMarker(MapG,pos,html,cmt,"",IconStyle3);      
         MapG.fitBounds(box);
         
 }else{alert("Geocode failed : " + status); }
@@ -763,67 +802,79 @@ function getEventMarkerInfo(event){
       // 因為return 在先 而 geocode 在後 之故，目前還不知如何傳出參數
     
     var MapG = mapG ;
-    
-    if(document.getElementById("geocodeCHK").checked){
-    
-     var geocoder = new google.maps.Geocoder();
-        
-    var t1 = new Date() // geocode 計時   
-    // GeoCode 開始
-    geocoder.geocode({'latLng': latlng},function(results, status){ 
+    var markerItem0 = createMarker(MapG,latlng,mk1info,mk1cmt,"open",IconStyle2); //click
 
-     var response ; 
-     if (status == google.maps.GeocoderStatus.OK) {
-        if (results[0]) { 
-        response = results 
-          } else {alert("No results found"); }
-     }else{ alert("Geocoder failed : " + status); }
+    var geocodeExec = ()=>{
+
+      var geocoder = new google.maps.Geocoder();
+        
+        var t1 = new Date() // geocode 計時   
+        // GeoCode 開始
+        geocoder.geocode({'latLng': latlng},function(results, status){ 
+    
+         var response ; 
+         if (status == google.maps.GeocoderStatus.OK) {
+            if (results[0]) { 
+            response = results 
+              } else {alert("No results found"); }
+         }else{ alert("Geocoder failed : " + status); }
+             
+         if(response){
+         var GCaddress = response[0].formatted_address ; // 0層最詳細
+         var GClatlng = response[0].geometry.location ; //地址記載座標
+         }
+         else{ var GCaddress = "[geocode error]" ; var GClatlng = latlng }
+          
+         var GClat = GClatlng.lat() ;
+         var GClng = GClatlng.lng() ;
          
-     if(response){
-     var GCaddress = response[0].formatted_address ; // 0層最詳細
-     var GClatlng = response[0].geometry.location ; //地址記載座標
-     }
-     else{ var GCaddress = "[geocode error]" ; var GClatlng = latlng }
-      
-     var GClat = GClatlng.lat() ;
-     var GClng = GClatlng.lng() ;
-     
-     var GCinfo = GClat+","+GClng + "<br/>" + "抓取的地址位置" ;
-     var GCcmt = GClat+","+GClng ;
-     
-     mk1cmt += "\n"+GCaddress ;
-     
-     var t2 = new Date(); // geocode後的時間
-     var timecost = "(" + (t2 - t1) + "ms)" ; // 相減得時間差 ms
-     mk1info += "<br/>"+"地址: " + GCaddress + timecost;
-        
-     createMarker(MapG,GClatlng,GCinfo,GCcmt,"",IconStyle3); // geocode
-     
-     createMarker(MapG,latlng,mk1info,mk1cmt,"open",IconStyle2); //click
-     
-     createPolyline([latlng,GClatlng]); // click -line-> geocode
+         var GCinfo = GClat+","+GClng + "<br/>" + "抓取的地址位置" ;
+         var GCcmt = GClat+","+GClng ;
+         
+         mk1cmt += "\n"+GCaddress ;
+         
+         var t2 = new Date(); // geocode後的時間
+         var timecost = "(" + (t2 - t1) + "ms)" ; // 相減得時間差 ms
+         mk1info += "<br/>"+"地址: " + GCaddress + timecost;
+            
+         var markerItem1 = createMarker(MapG,GClatlng,GCinfo,GCcmt,"",IconStyle3); // geocode
+         
+         if(markerItem1){
+          var polylineItem = createPolyline([latlng,GClatlng]); // click -line-> geocode
+           markerItem1['polylineItems'].push(polylineItem);
+         }
+    
+         if(markerItem0){
+          markerItem0['marker'].setOptions({'title':mk1cmt});
+          markerItem0['info'].setContent(mk1info);
+         }
+         // update click marker info
+         
+        }); // geocoder.
 
-         } // callback func. 如此 createMarker 得於 geocoder 之後，有時間差
-      ); // geocoder 本身會慢些處理，如有要繼續執行的程式，則寫在之後
-    // end of process2
-    }else{
-      createMarker(MapG,latlng,mk1info,mk1cmt,"open",IconStyle2); //click
-    }
+    };
+
+    if(document.getElementById("geocodeCHK").checked) geocodeExec();
     
     // 其他檢查 10m 100m 800x500 是否要生成
-    
+    var polylineItems = [];
     if(document.getElementById("area10m").checked){
-    getXmYm2gmapSub(infoObj.pt, 10,10);    
+      var polylineItem = getXmYm2gmapSub(infoObj.pt, 10,10);
+      polylineItems.push(polylineItem);    
     } 
     
     if(document.getElementById("area100m").checked){
-    getXmYm2gmapSub(infoObj.pt, 100,100);    
+      var polylineItem =getXmYm2gmapSub(infoObj.pt, 100,100);
+      polylineItems.push(polylineItem);
     } 
     
     if(document.getElementById("area800x500m").checked){
-    getXmYm2gmapSub(infoObj.pt, 800,500);    
+      var polylineItem = getXmYm2gmapSub(infoObj.pt, 800,500);
+      polylineItems.push(polylineItem);
     } 
     
+    if(markerItem0) markerItem0['polylineItems']=polylineItems;
+
     GtaipowerSet = bakTPset // 還原設定
     
 } // func. getEventMarkerInfo
@@ -869,47 +920,41 @@ function get_84_97_67_TPName_info(latlng){
 
 //-------------------------------------------------------------------------
 
-function createPolyline(latlngObj,map,polylines){
+function createPolyline(latlngs,map,polylines){
 
   var MapG = mapG, PolylinesG = polylinesG;
   if(map) MapG = map;
   if(polylines) PolylinesG = polylines;
 
-if(polylineCHK(latlngObj) == true){
-
- var cline = new google.maps.Polyline({ // click -> geocode
-        path: latlngObj
+ var polyline = new google.maps.Polyline({ // click -> geocode
+        path: latlngs
       });
-    cline.setOptions(PolyLineOptions);
-     
-     cline.setMap(MapG) ; 
-     
-     PolylinesG.push(cline) ; // Global 管理
+    polyline.setOptions(PolyLineOptions);
+  
+  var polylineItem = new PolyLineItemCreate(polyline);
+  var key = polylineItem.getKey();
+  if(polylineCHK(key) == true){
+     polyline.setMap(MapG); 
+     PolylinesG.set(key,polylineItem) ; // Global 管理
+  } // if
 
- } // if
+ return polylineItem;
 } // func. createPolyline
 
 //-------------------------------------------------------------------------
 // 兩點檢查重複的polyline
-function polylineCHK(latlngObj){
+function polylineCHK(key){
 
 var result = true
 var PolylinesG = polylinesG
 
-if( PolylinesG.length > 0 ){ 
-
-var latlngObj0 = latlngObj[0].toString()
-var latlngObj1 = latlngObj[1].toString()
-for(var i=0 , num=PolylinesG.length ; i < num ; i++){
-
-if(PolylinesG[i].getPath().getAt(0).toString() == latlngObj0
-&& PolylinesG[i].getPath().getAt(1).toString() == latlngObj1 )
-{ addSettingView("find the same polyline at "+i );
-  result = false ; }
-
-  } // for polylinesG
-
-} // if
+if(PolylinesG.has(key)){ 
+  var polylineItem = PolylinesG.get(key);
+  polylineItem.plus();
+  PolylinesG.set(key,polylineItem);
+  //addSettingView("find the same polyline")
+  result = false;
+} 
 
 return result
 } // func. polylineCHK
@@ -923,11 +968,9 @@ function createMarker(map,latlng,html,cmt,chk,style,markers){
 
   var MarkerNumObj = document.getElementById("markerNum")
 
-if(markerCHK(latlng,MarkersG) == true){
 // marker
 var marker = new google.maps.Marker(
     { position: latlng,
-      map: map,
       icon: style,
       title: cmt } ); //座標,地圖,title:移上點位時顯示黃底小框之資訊
 // info
@@ -940,11 +983,13 @@ var markerInfo = new google.maps.InfoWindow(
        getMarkerPOShtml(marker);        // 顯示這是第幾個 marker 
      } );
 // manage
-MarkersG.push({
-'marker':marker,
-'info':markerInfo
-});    
-    // info open
+var markerItem = new MarkerItemCreate(marker,markerInfo);
+
+if(markerCHK(marker,MarkersG) == true){
+// marker global & set map
+MarkersG.push(markerItem);  
+marker.setMap(map);
+// info open
     if(chk == "open"){
     closeAllMarkerInfo() // 關閉所有 info   
     markerInfo.open(map,marker); // 剛產生的 marker開info窗
@@ -953,26 +998,23 @@ MarkersG.push({
 MarkerNumObj.value = markersG.length // marker總數顯示更新
 getMarkerPOShtml(marker) // 查詢此 marker 是第幾個，並更新 html
 
-  } // if markerCHK.
+} // if markerCHK.
 
-return marker;
+return markerItem;
 }// func. createMarker 
 
 //-------------------------------------------------------------------------
 // 檢查重複的 marker(by latlng)
-function markerCHK(latlng,markers){
+function markerCHK(marker,markers){
 
 var result = true
 
-if( markers.length > 0 ){
-
-var latlngStr = latlng.toString()
 for(var i = 0 , num=markers.length ; i < num ; i++){
-if(markers[i]['marker'].getPosition().toString() == latlngStr )
+  var latlngStr = markers[i]['marker'].getPosition().toString();
+  if(latlngStr == marker.getPosition().toString() )
 { addSettingView("find the same marker at "+i );
   result = false ; }
                     } // for
-    } // if
 
 return result
 }
@@ -1026,6 +1068,7 @@ if(set == 'del' && mPOS > 0 && MarkersG.length > 0){
 var i = parseInt(markerPOSobj.value) -1
 MarkersG[i]['info'].close()  // info 關閉
 MarkersG[i]['marker'].setMap(null) // marker set null
+MarkersG[i].clearPolylines();
 MarkersG.splice(i,1)
 if(i == 0 && MarkersG.length > 0){i = 1}
 markerPOSobj.value = i   // 更新目前位置
@@ -1070,10 +1113,8 @@ for(var i=0 , num=MarkersG.length ; i < num ; i++)
 
 MarkersG.length = 0 ; 
 
-if(PolylinesG){
-for(var i=0 , num=PolylinesG.length ; i < num ; i++)
-{PolylinesG[i].setMap(null); }
-PolylinesG.length = 0 ; } // polylinesG
+PolylinesG.forEach((pi,k,s)=>{pi.polyline.setMap(null)});
+PolylinesG.clear();
 
 if(PolygonsG){
 for(var i=0 , num=PolygonsG.length ; i < num ; i++)
@@ -1135,7 +1176,9 @@ var latlngDR = new google.maps.LatLng(latDR,lngDR)
 var latlngUR = new google.maps.LatLng(latUR,lngUR)
 var latlngUL = new google.maps.LatLng(latUL,lngUL)
 
-createPolyline([latlng,latlngDR,latlngUR,latlngUL,latlng]);
+var polylineItem = createPolyline([latlng,latlngDR,latlngUR,latlngUL,latlng]);
+
+return polylineItem;
 
 }
 
